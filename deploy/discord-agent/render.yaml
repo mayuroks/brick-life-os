@@ -16,5 +16,8 @@ services:
         sync: false
       - key: JIRA_API_TOKEN
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: OPENROUTER_API_KEY
         sync: false
+      # Voice transcription: default to the baked tiny model (free-tier safe).
+      - key: WHISPER_MODEL
+        value: /app/models/ggml-tiny.en.bin

@@ -1,14 +1,27 @@
 # Agent Handover: Project "Brick" (Discord-Jira Bot POC)
 
-## Voice transcription (added 2026-08-03, feature 004)
-* Voice messages (audio, empty text) are now transcribed **locally** with whisper.cpp
-  (`brew install whisper-cpp` → `whisper-cli`) + `ffmpeg-static`, then forwarded to the agent.
-* **Local-only**: the deployed Render image does not include whisper yet — deployed STT is a separate,
-  later feature. Local setup + offline validation: see `deploy/discord-agent/README.md` ("Voice messages").
-* Key files: `src/transcribe/transcribe.js` (pipeline: download → Opus→16k mono WAV → whisper, silence
-  gate + graceful no-speech/error), `src/bridge/client.js` (voice detection via `MessageFlags.IsVoiceMessage`),
-  `scripts/transcribe-local.mjs` (offline harness), `scripts/download-whisper-model.mjs` (model fetch).
-* Optional env: `WHISPER_BIN`, `WHISPER_MODEL`, `WHISPER_TIMEOUT_MS` (all have defaults; bot boots without them).
+## Render Ubuntu 26.04 deployment (added 2026-08-03, feature 005)
+* Deploy image rebased from `node:20-alpine` to **`ubuntu:26.04` (amd64)** —
+  glibc base so whisper-cli/ffmpeg/opencode all run. Cloud **voice transcription** is now in scope
+  (was local-only in 004).
+* Image (578 MB, secret-free) installs: `whisper.cpp` (apt `/usr/bin/whisper-cli`), `ffmpeg` (apt) +
+  `ffmpeg-static` (npm), Node 24 (NodeSource), opencode via official installer + **symlink to
+  /usr/local/bin** (the installer ignores `OPENCODE_INSTALL_DIR` and puts the binary in
+  `$HOME/.opencode/bin` — the symlink is REQUIRED or `run.sh` can't start the agent).
+* Baked model: `/app/models/ggml-tiny.en.bin` (free-tier 512 MB safe); `WHISPER_MODEL` env override.
+* `render.yaml`: runtime docker, plan free, healthCheckPath /health, secrets + WHISPER_MODEL.
+* Validated in Docker: build clean, whisper transcribes fixture, agent (`opencode server listening`) +
+  bridge (`Bridge logged in as Brick#4254`) boot, /health ok.
+* Known: free tier sleeps ~15 min idle (Discord gateway is outbound) → needs external pinger; ~0.1 CPU
+  slows transcription; guaranteed 24/7 + near-realtime needs a paid plan. See README "Render free-tier notes".
+* Minor (pre-existing, not fixed here): `/health` reports `agent:"up"` even if opencode serve failed
+  (hard-coded `true` in `src/index.js`); worth fixing in a later observability feature.
+
+## Voice transcription (local, feature 004)
+* Voice messages (audio, empty text) transcribed locally with whisper.cpp + ffmpeg-static then
+  forwarded to the agent. Local-only originally; now also available server-side in the 005
+  Ubuntu image. Local setup + offline validation: see `deploy/discord-agent/README.md` ("Voice messages").
+* Key files: `src/transcribe/transcribe.js`, `src/bridge/client.js`, `scripts/transcribe-local.mjs`.
 
 ## Objective
 Deploy a 24/7 serverless/cloud-hosted minimal AI bot ("Brick") on Render's free tier, connecting Discord webhooks to OpenRouter for remote querying while traveling.

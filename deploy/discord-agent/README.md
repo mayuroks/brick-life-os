@@ -66,14 +66,31 @@ Optional env overrides (see `.env.example`): `WHISPER_BIN`, `WHISPER_MODEL`,
 
 1. Push this repo (deploy root = this `deploy/discord-agent/` dir) to GitHub.
 2. Render → New Web Service → connect the repo → auto-detect the `Dockerfile`
-   (or use `render.yaml`).
+   (or use `render.yaml`). The deploy builds from an **Ubuntu 26.04 LTS (amd64)**
+   base image and includes server-side **voice transcription** (whisper-cli +
+   ffmpeg + a baked `ggml-tiny.en.bin` model).
 3. Add these **secrets** in the Render dashboard (never committed):
    - `DISCORD_BOT_TOKEN`
    - `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`
    - `ANTHROPIC_API_KEY` (or `OPENROUTER_API_KEY`)
+   - `WHISPER_MODEL` — defaults to `/app/models/ggml-tiny.en.bin` (can be
+     overridden for larger plans)
    - Health check path: `/health`
 4. In the Discord Developer Portal, enable the `MESSAGE_CONTENT` privileged
    intent for the bot so it can read message content.
+
+### Render free-tier notes (read before relying on 24/7)
+
+- **Sleep**: free tier spins down after ~15 min idle, and the Discord gateway is
+  *outbound* (doesn't count as inbound activity), so the bot can go offline when
+  idle. Add an external pinger (e.g. UptimeRobot) hitting the public `/health`
+  URL every <15 min to keep it warm. **Guaranteed always-on 24/7 requires a
+  paid/starter plan.**
+- **Speed**: free tier gives ~0.1 CPU, so server-side voice transcription is
+  slower than local; a paid plan restores near-realtime transcription.
+- **Memory**: free tier is 512 MB; the image uses the `tiny.en` model by default
+  to fit. Switch `WHISPER_MODEL` (`base.en` etc.) only on a larger plan.
+- **No disk**: free tier has no persistent disk; the bot holds no state to lose.
 
 ## Command set (all `001` agent commands work)
 

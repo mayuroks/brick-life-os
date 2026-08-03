@@ -1,4 +1,4 @@
-# Keep the image lean and secret-free.
+# Keep the deploy image lean and secret-free.
 node_modules/
 .git
 .env
@@ -10,3 +10,11 @@ specs/
 deploy/discord-agent/.gitignore
 *.log
 .DS_Store
+
+# Source local model tree — the model is downloaded INSIDE the Docker build, not copied.
+models/
+
+# Personal voice recordings — never bake into the image.
+fixtures/*.voice.opus
+fixtures/**/*.wav
+fixtures/**/*.m4a
