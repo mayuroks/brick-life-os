@@ -1,0 +1,14 @@
+# Secrets — never commit
+opencode.json
+.env
+.env.local
+*.pem
+
+# Node / deps
+node_modules/
+package.json
+package-lock.json
+bun.lock
+
+# Editor / OS
+.DS_Store
