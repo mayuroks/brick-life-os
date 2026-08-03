@@ -1,0 +1,17 @@
+# Render blueprint for the deployed Brick Discord surface.
+# Deploys via Docker (see Dockerfile) on the free tier.
+services:
+  - type: web
+    name: brick-discord-bot
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # Set these as secret values in the Render dashboard (synced nowhere / not committed).
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: DISCORD_PUBLIC_KEY
+        sync: false
+      # Optional (v1 is Discord->OpenRouter only; add the Jira bridge later).
+      - key: JIRA_API_TOKEN
+        sync: false

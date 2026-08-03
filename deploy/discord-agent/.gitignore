@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Secrets — never commit real values
+.env
+.env.local
+*.pem
+
+# opencode runtime artifacts (auth is materialized at boot, not baked/committed)
+agent/opencode.json
+agent/auth.json
+.opencode/
+
+# Keep this package's manifest trackable (root .gitignore ignores these globally)
+!package.json
+!package-lock.json
+
+# Local logs / editor / OS
+*.log
+.DS_Store
+Thumbs.db

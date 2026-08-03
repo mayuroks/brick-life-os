@@ -1,0 +1,9 @@
+# Keep the image lean and secret-free.
+node_modules/
+.git
+.env
+.env.local
+*.pem
+specs/
+docs/
+.DS_Store

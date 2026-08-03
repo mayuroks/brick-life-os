@@ -1,0 +1,14 @@
+# Secrets — never commit the real .env
+.env
+.env.local
+*.pem
+
+# Node / deps
+node_modules/
+
+# Keep this package's manifest trackable (root .gitignore ignores these globally)
+!package.json
+!package-lock.json
+
+# Editor / OS
+.DS_Store
