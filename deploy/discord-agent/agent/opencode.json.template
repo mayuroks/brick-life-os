@@ -3,7 +3,7 @@
   "provider": {
     "openrouter": {}
   },
-  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+  "model": "${AGENT_MODEL}",
   "skills": {
     "paths": [".skill"]
   },

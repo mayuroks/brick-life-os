@@ -19,7 +19,11 @@ const tpl = readFileSync(tplPath, 'utf8');
 const filled = tpl
   .replaceAll('${JIRA_URL}', process.env.JIRA_URL)
   .replaceAll('${JIRA_USERNAME}', process.env.JIRA_USERNAME)
-  .replaceAll('${JIRA_API_TOKEN}', process.env.JIRA_API_TOKEN);
+  .replaceAll('${JIRA_API_TOKEN}', process.env.JIRA_API_TOKEN)
+  .replaceAll(
+    '${AGENT_MODEL}',
+    process.env.AGENT_MODEL || 'openrouter/deepseek/deepseek-v4-flash-0731',
+  );
 
 writeFileSync(outPath, filled);
-console.log(`Wrote ${outPath} (Jira MCP env-filled).`);
+console.log(`Wrote ${outPath} (Jira MCP + agent model env-filled).`);
