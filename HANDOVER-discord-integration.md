@@ -1,5 +1,15 @@
 # Agent Handover: Project "Brick" (Discord-Jira Bot POC)
 
+## Voice transcription (added 2026-08-03, feature 004)
+* Voice messages (audio, empty text) are now transcribed **locally** with whisper.cpp
+  (`brew install whisper-cpp` → `whisper-cli`) + `ffmpeg-static`, then forwarded to the agent.
+* **Local-only**: the deployed Render image does not include whisper yet — deployed STT is a separate,
+  later feature. Local setup + offline validation: see `deploy/discord-agent/README.md` ("Voice messages").
+* Key files: `src/transcribe/transcribe.js` (pipeline: download → Opus→16k mono WAV → whisper, silence
+  gate + graceful no-speech/error), `src/bridge/client.js` (voice detection via `MessageFlags.IsVoiceMessage`),
+  `scripts/transcribe-local.mjs` (offline harness), `scripts/download-whisper-model.mjs` (model fetch).
+* Optional env: `WHISPER_BIN`, `WHISPER_MODEL`, `WHISPER_TIMEOUT_MS` (all have defaults; bot boots without them).
+
 ## Objective
 Deploy a 24/7 serverless/cloud-hosted minimal AI bot ("Brick") on Render's free tier, connecting Discord webhooks to OpenRouter for remote querying while traveling.
 

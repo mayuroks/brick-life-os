@@ -37,6 +37,31 @@ cp .env.example .env     # fill DISCORD_BOT_TOKEN, JIRA_*, and the LLM key
 `run.sh` renders `agent/opencode.json` from env (never baked), starts
 `opencode serve` on :4096, then starts the bridge + `/health`.
 
+## Voice messages (local transcription)
+
+Voice messages (audio, no typed text) are transcribed locally and forwarded to
+the agent like text. **Local-only in this feature**: the shared/deployed image
+does not include whisper yet — deployed voice transcription is a separate later
+feature.
+
+Setup (once, local):
+
+```text
+npm install ffmpeg-static      # Opus -> WAV conversion
+brew install whisper-cpp       # whisper-cli binary
+node scripts/download-whisper-model.mjs   # -> models/ggml-base.en.bin
+```
+
+Validate offline (no Discord needed):
+
+```text
+EXPECT_TRANSCRIPT="voice transcription" node scripts/transcribe-local.mjs fixtures/test.opus
+```
+
+Optional env overrides (see `.env.example`): `WHISPER_BIN`, `WHISPER_MODEL`,
+`WHISPER_TIMEOUT_MS`. If they're unset the bridge falls back to defaults
+(`whisper-cli`, `./models/ggml-base.en.bin`, 120 s) and still boots.
+
 ## Deploy to Render (via GitHub)
 
 1. Push this repo (deploy root = this `deploy/discord-agent/` dir) to GitHub.

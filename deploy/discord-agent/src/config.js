@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { join } from 'node:path';
 
 /**
  * Resolve and validate runtime configuration from the environment.
@@ -38,5 +39,15 @@ export function loadConfig(env = process.env) {
     jiraToken: env.JIRA_API_TOKEN,
     serveUrl: env.OPENCODE_SERVE_URL || 'http://127.0.0.1:4096',
     port: Number(env.PORT || 3000),
+    // Optional voice-transcription settings (local-only in this feature).
+    // Absent values fall back to defaults so the bridge still boots.
+    whisperBin: env.WHISPER_BIN || 'whisper-cli',
+    whisperModel: env.WHISPER_MODEL || resolveWhisperModelDefault(),
+    whisperTimeoutMs: Number(env.WHISPER_TIMEOUT_MS || 120000),
   };
+}
+
+function resolveWhisperModelDefault() {
+  // Default model lives at <cwd>/models/ggml-base.en.bin (deploy/discord-agent/models/).
+  return join(process.cwd(), 'models', 'ggml-base.en.bin');
 }

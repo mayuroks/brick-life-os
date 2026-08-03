@@ -19,3 +19,11 @@ agent/auth.json
 *.log
 .DS_Store
 Thumbs.db
+
+# Whisper model (large ~148MB binary, rebuilt by scripts/download-whisper-model.mjs)
+models/
+
+# Personal voice recordings — only synthesize/safe clips belong in fixtures/ (see fixtures/README.md)
+fixtures/**/*.wav
+fixtures/**/*.m4a
+fixtures/*.voice.opus
