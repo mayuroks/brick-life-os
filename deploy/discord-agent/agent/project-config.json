@@ -1,0 +1,131 @@
+{
+  "version": "1.0.0",
+  "feature": "Life OS Setup",
+  "description": "Confirmed setup-time values for the Life OS agent. Jira site URL + MCP server name are provided; project keys are DERIVED at runtime by querying Jira via the MCP server (project_discovery), NOT entered manually. Run ./scripts/lifeos-doctor.sh to verify config completeness + connectivity. This file is the single place the Jira config, skills, streak tracker, calendar, and persona workstreams read their runtime values from.",
+  "jira": {
+    "site_url": "https://mayurzenith.atlassian.net",
+    "mcp": {
+      "server_name": "atlassian",
+      "configured": true,
+      "verified": "2026-08-02",
+      "note": "Jira MCP server 'atlassian' (sooperset/mcp-atlassian via uvx). Probe OK: 63 tools, jira_get_all_projects returned live data. Auth = API token."
+    },
+    "project_discovery": {
+      "mode": "runtime_query",
+      "method": "Resolve the real key for each domain by querying Jira via the MCP server (e.g. discover/list projects), matching on project name or lead. Do NOT hardcode static keys. The 9 domain names below are the canonical routing map used by the capture skill; the key for each is DERIVED from Jira at setup/run time.",
+      "required_domains": [
+        "Career",
+        "Family",
+        "House",
+        "Finance",
+        "Network",
+        "Health/Diet",
+        "LifeOS",
+        "Docs",
+        "Ideas"
+      ],
+      "key_overrides": {
+        "Career": "BF",
+        "Family": "AT",
+        "House": "HM",
+        "Finance": "FIN",
+        "Network": "BR",
+        "Health/Diet": "BH",
+        "LifeOS": "BS",
+        "Docs": "MDP",
+        "Ideas": "ART",
+        "note": "Resolved live from Jira 2026-08-02. BPD (Personal Development) exists but is unused by the 9-domain map."
+      }
+    },
+    "projects": {
+      "note": "Resolved at runtime from Jira via MCP (project_discovery). keys live here only after discovery runs."
+    },
+    "workflow": [
+      "Backlog",
+      "Ready",
+      "Todo-Week",
+      "In Progress",
+      "Waiting",
+      "Follow-up",
+      "Done"
+    ],
+    "labels": [
+      "loc:<value>",
+      "time:<value>",
+      "person:<value>",
+      "week:YYYY-Www",
+      "needs-research",
+      "research-done",
+      "routine:<name>",
+      "internal",
+      "long-stuck"
+    ],
+    "metric_custom_fields": [
+      "planperfection",
+      "deliveryperfection",
+      "deliverystreak",
+      "practicestreak:<name>",
+      "cleanweekstreak",
+      "statustier",
+      "maxdelivery",
+      "targetsweek"
+    ],
+    "saved_filters": [
+      "Pipeline",
+      "Backlog",
+      "Todo-Week",
+      "Long-stuck",
+      "Done-this-week"
+    ]
+  },
+  "calendar": {
+    "provider": "Google",
+    "timezone": "local",
+    "events": [
+      {
+        "name": "Night-before mental prep",
+        "recurrence": "daily evening",
+        "time": "21:00",
+        "reminder_text": "Tomorrow: X, Y. If you don't de-risk now (pack, message, phone call), you'll be scrambling — and it breaks delivery. 10 min."
+      },
+      {
+        "name": "Morning task-pick",
+        "recurrence": "daily",
+        "time": "08:00",
+        "reminder_text": "Pick today's 1–3 from the week. Drift = carry-over + a broken delivery streak. Choose on purpose."
+      },
+      {
+        "name": "Unplanned-week warning",
+        "recurrence": "weekly Sunday",
+        "time": "09:00",
+        "reminder_text": "The week is empty and unplanned — that's the dangerous state. Groom now or you'll improvise reactively all week. Run weekly."
+      }
+    ],
+    "confirmed": "2026-08-03",
+    "note": "Google Calendar, local tz. Times: night-before 21:00, morning 08:00, unplanned-week Sunday 09:00. Static recurring, created once, NO calendar-write automation (FR-010). Reminders ONLY (FR-010a): the daily list is derived from the Todo-Week list in Jira at read time and surfaced in chat — NEVER written to any calendar event. See scripts/calendar-setup.md."
+  },
+  "scoring": {
+    "status_tiers": [
+      { "tier": "god-mode", "rule": "delivery_perfection >= 95 AND all targets hit" },
+      { "tier": "elite", "rule": "delivery_perfection >= 90" },
+      { "tier": "good", "rule": "delivery_perfection >= 75" },
+      { "tier": "average", "rule": "delivery_perfection >= 50" },
+      { "tier": "hopeless", "rule": "else" }
+    ],
+    "starting_tier": "average",
+    "weekly_pick_cap": 7,
+    "starting_practice_streaks": 1,
+    "clean_week_threshold_pct": 80
+  },
+  "persona": {
+    "tone": {
+      "base": "blunt",
+      "anti_drift": true,
+      "problem_solution_moveon": true,
+      "never_soften": true
+    },
+    "adjustable": true,
+    "adjustments": {},
+    "note": "One fixed coach voice applied to ALL surfaces (capture, weekly-groom, daily, research). Tune the single persona via 'adjustments' (add/blunt/soften/omit) from user feedback; do not create per-surface characters. Ragebait one-liners live separately in persona/ragebait.md (T016). See persona/persona.md (T039-T041)."
+  }
+}
