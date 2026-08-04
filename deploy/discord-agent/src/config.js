@@ -41,6 +41,9 @@ export function loadConfig(env = process.env) {
     port: Number(env.PORT || 3000),
     // Optional voice-transcription settings (local-only in this feature).
     // Absent values fall back to defaults so the bridge still boots.
+    // DISABLE_VOICE=1 -> text-only mode: voice messages are acknowledged with a
+    // hint instead of running whisper (no CPU/space for the model).
+    disableVoice: env.DISABLE_VOICE === '1' || env.DISABLE_VOICE === 'true',
     whisperBin: env.WHISPER_BIN || 'whisper-cli',
     whisperModel: env.WHISPER_MODEL || resolveWhisperModelDefault(),
     whisperTimeoutMs: Number(env.WHISPER_TIMEOUT_MS || 120000),

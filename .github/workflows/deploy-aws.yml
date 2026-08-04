@@ -1,0 +1,93 @@
+name: Deploy discord-agent to AWS (ECS Fargate)
+
+# Builds the deploy/discord-agent Docker image and ships it to Amazon ECR,
+# then deploys it to the discord-agent ECS Fargate service. Text-only by
+# default (DISABLE_VOICE=1) so no whisper model/CPU is needed on the host.
+#
+# NOTE: AWS App Runner is closed to new customers, so this targets ECS Fargate
+# (the deployed host). See specs/007-aws-apprunner-deploy/research.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/discord-agent/**'
+      - '.github/workflows/deploy-aws.yml'
+  workflow_dispatch:
+
+# OIDC: GitHub assumes an IAM role with short-lived credentials; no long-lived
+# AWS keys are stored as repo secrets (FR-005).
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: discord-agent
+  ECS_CLUSTER: discord-agent
+  ECS_SERVICE: discord-agent
+  ECS_TASK_DEFINITION: discord-agent
+  IMAGE_TAG: ${{ github.sha }}
+  APP_DIR: deploy/discord-agent
+  # Networking for the Fargate service (non-secret; provisioned, see plan.md).
+  VPC_SUBNETS: subnet-0291d89a38f3bb502,subnet-073ab0dcc4d7073c3
+  VPC_SG: sg-04910b2389f70681a
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to ECR (SHA + latest)
+        working-directory: ${{ env.APP_DIR }}
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          docker build --platform linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Deploy to ECS Fargate
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+          IMAGE_URI: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        run: |
+          # Create the service on first deploy if absent; otherwise update it.
+          # The task definition references :latest, so force-new-deployment pulls
+          # the freshly pushed, sha-verified :latest image.
+          if ! aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
+              --region "$AWS_REGION" >/dev/null 2>&1; then
+            echo "Service not found — creating (one-time infrastructure)."
+            aws ecs create-service \
+              --cluster "$ECS_CLUSTER" \
+              --service-name "$ECS_SERVICE" \
+              --task-definition "$ECS_TASK_DEFINITION" \
+              --desired-count 1 \
+              --launch-type FARGATE \
+              --network-configuration \
+                "{\"awsvpcConfiguration\":{\"subnets\":[\"$VPC_SUBNETS\"],\"securityGroups\":[\"$VPC_SG\"],\"assignPublicIp\":\"ENABLED\"}}" \
+              --region "$AWS_REGION"
+          fi
+          # Any step failure aborts the run (set -e in run step); a failed
+          # rollout keeps the previous healthy task serving (FR-007).
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --task-definition "$ECS_TASK_DEFINITION" \
+            --force-new-deployment \
+            --region "$AWS_REGION"
+          echo "Deployment triggered for $IMAGE_URI (cluster=$ECS_CLUSTER service=$ECS_SERVICE)."

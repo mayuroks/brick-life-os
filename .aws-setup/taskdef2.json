@@ -1,0 +1,36 @@
+{
+  "family": "discord-agent",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::243746944554:role/ecs-task-execution",
+  "containerDefinitions": [
+    {
+      "name": "discord-agent",
+      "image": "243746944554.dkr.ecr.us-east-1.amazonaws.com/discord-agent:latest",
+      "essential": true,
+      "portMappings": [ { "containerPort": 3000, "protocol": "tcp" } ],
+      "environment": [
+        { "name": "DISABLE_VOICE", "value": "1" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "JIRA_URL", "value": "https://mayurzenith.atlassian.net" },
+        { "name": "OPENCODE_SERVE_URL", "value": "http://127.0.0.1:4096" }
+      ],
+      "secrets": [
+        { "name": "DISCORD_BOT_TOKEN", "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/DISCORD_BOT_TOKEN" },
+        { "name": "JIRA_USERNAME", "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/JIRA_USERNAME" },
+        { "name": "JIRA_API_TOKEN", "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/JIRA_API_TOKEN" },
+        { "name": "OPENROUTER_API_KEY", "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/OPENROUTER_API_KEY" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/discord-agent",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "discord-agent"
+        }
+      }
+    }
+  ]
+}

@@ -73,6 +73,15 @@ export function createBridge(cfg, state) {
     const voice = !text && isVoiceMessage(message);
     if (!text && !voice) return;
 
+    // Text-only mode: acknowledge voice notes with a hint and return immediately,
+    // skipping whisper entirely (the host may lack CPU/space for the model).
+    if (voice && cfg.disableVoice) {
+      message
+        .reply('🎙️ Voice transcription is off right now — send me a text message instead.')
+        .catch(() => {});
+      return;
+    }
+
     queue.enqueue(message.channelId, async () => {
       let status;
       let timer;

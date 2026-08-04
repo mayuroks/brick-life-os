@@ -12,3 +12,7 @@ bun.lock
 
 # Editor / OS
 .DS_Store
+
+# Local AWS CLI v2 (installed in-project, not committed)
+.aws-cli-v2/
+aws.sh
