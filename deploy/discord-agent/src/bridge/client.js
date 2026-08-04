@@ -1,7 +1,6 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { runAgent } from '../agent/client.js';
 import { ChannelQueue } from './queue.js';
-import { isVoiceMessage, transcribeVoiceMessage } from '../transcribe/transcribe.js';
 
 const STATUS_PHRASES = [
   'Wondering',
@@ -68,55 +67,25 @@ export function createBridge(cfg, state) {
     // Ignore the bot's own messages and other bots (no reply loops).
     if (message.author.bot) return;
 
-    // Voice messages carry empty text but a transcribable audio attachment (FR-001),
-    // so unlike plain empty text they are NOT dropped.
-    const voice = !text && isVoiceMessage(message);
-    if (!text && !voice) return;
-
-    // Text-only mode: acknowledge voice notes with a hint and return immediately,
-    // skipping whisper entirely (the host may lack CPU/space for the model).
-    if (voice && cfg.disableVoice) {
+    // Voice transcription is fully removed (text-only agent): any message with
+    // no typed text but a transcribable audio attachment is acknowledged with a
+    // notice instead of being processed. Empty text with no audio is dropped.
+    if (!text && message.attachments?.size > 0) {
       message
-        .reply('🎙️ Voice transcription is off right now — send me a text message instead.')
+        .reply('🎙️ Voice transcription is off — send me a text message instead.')
         .catch(() => {});
       return;
     }
+    if (!text) return;
 
     queue.enqueue(message.channelId, async () => {
       let status;
       let timer;
       let payload = text;
       try {
-        if (voice) {
-          status = await message.reply('⏳ **Listening**');
-          timer = startStatus(status);
-          const t0 = Date.now();
-          const { status: tStatus, text: transcript } = await transcribeVoiceMessage(
-            message.attachments.first(),
-            { bin: cfg.whisperBin, model: cfg.whisperModel, timeoutMs: cfg.whisperTimeoutMs },
-          );
-          console.log(`[discord] transcript (${Date.now() - t0}ms): ${JSON.stringify(transcript)}`);
-          if (tStatus === 'no-speech' || !transcript) {
-            clearInterval(timer);
-            await status
-              .edit("I didn't catch that — try a text message or speak up.")
-              .catch(() => {});
-            return;
-          }
-          if (tStatus === 'error') {
-            clearInterval(timer);
-            console.error(`[discord] voice transcription failed for ${message.channelId}`);
-            await status
-              .edit("Sorry, I couldn't transcribe that audio. Try again or send a text message.")
-              .catch(() => {});
-            return;
-          }
-          payload = transcript;
-        }
-
-        console.log(`[discord] -> agent: ${JSON.stringify(payload)}${voice ? ' (voice)' : ''}`);
-        if (!status) status = await message.reply('⏳ **Wondering**');
-        if (!timer) timer = startStatus(status);
+        console.log(`[discord] -> agent: ${JSON.stringify(payload)}`);
+        status = await message.reply('⏳ **Wondering**');
+        timer = startStatus(status);
         const t1 = Date.now();
         const reply = await runAgent(cfg.serveUrl, payload);
         clearInterval(timer);
