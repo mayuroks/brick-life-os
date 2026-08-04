@@ -117,5 +117,15 @@ export function createBridge(cfg, state) {
     process.exit(1);
   });
 
+  // An unhandled 'error' on the Discord gateway WebSocket crashes the whole
+  // container (observed: ECONNRESET after a long agent run). Swallow + log so
+  // the bridge stays alive; discord.js will reconnect on its own.
+  client.on('error', (e) => {
+    log('warn', 'bridge.ws-error', { service: 'bridge' }, `Gateway error: ${e?.message || e}`);
+  });
+  client.ws?.on('error', (e) => {
+    log('warn', 'bridge.ws-error', { service: 'bridge' }, `WebSocket error: ${e?.message || e}`);
+  });
+
   return client;
 }

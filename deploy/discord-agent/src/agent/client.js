@@ -51,23 +51,61 @@ export function runAgent(serveUrl, message, opts = {}) {
     // discovery (it defaults to the invoking process's dir), so without this it
     // ran in the wrong dir and fell back to a default model. --dir pins it to
     // the bundled agent dir that holds opencode.json + AGENTS.md.
-    const child = spawn('opencode', ['run', '--dir', AGENT_DIR, message], {
-      cwd: AGENT_DIR,
-      stdio: ['ignore', 'pipe', 'pipe'],
+    // --print-logs + --log-level DEBUG + --thinking make the run verbose so a
+    // silent hang is diagnosable in CloudWatch (network calls, model stream,
+    // thinking blocks). We log these preconditions at spawn so a stuck run is
+    // distinguishable from a broken one.
+    const env = {
+      ...process.env,
+      // Force debug logging through stderr regardless of TTY.
+      ...(process.env.OPENCODE_LOG_LEVEL ? {} : { OPENCODE_LOG_LEVEL: 'DEBUG' }),
+    };
+    const child = spawn(
+      'opencode',
+      ['run', '--dir', AGENT_DIR, '--print-logs', '--log-level', 'DEBUG', '--thinking', message],
+      {
+        cwd: AGENT_DIR,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env,
+      },
+    );
+    log('info', 'run.start', ctx, 'Agent run started', {
+      timeoutMs,
+      pid: child.pid,
+      opencodeVersion: process.env.OPENCODE_VERSION || 'unknown',
+      providerKey: env.OPENROUTER_API_KEY ? 'set' : 'missing',
+      model: env.AGENT_MODEL || 'openrouter/deepseek/deepseek-v4-flash-0731',
     });
-    log('info', 'run.start', ctx, 'Agent run started', { timeoutMs });
     let out = '';
     let err = '';
     const state = { settled: false };
+
+    // Heartbeat: if the agent produces no output for a while, say so loudly
+    // instead of silently waiting out the full timeout.
+    let lastActivity = Date.now();
+    const hbTimer = setInterval(() => {
+      if (state.settled) return;
+      const quietFor = Date.now() - lastActivity;
+      if (quietFor >= 30000) {
+        log('warn', 'run.stall', ctx, 'No agent output for 30s+', {
+          quietMs: quietFor,
+          elapsedMs: Date.now() - t0,
+          outBytes: out.length,
+          errBytes: err.length,
+        });
+      }
+    }, 15000);
 
     const finish = (fn) => {
       if (state.settled) return;
       state.settled = true;
       clearTimeout(timer);
+      clearInterval(hbTimer);
       fn();
     };
 
     const onData = (stream) => (d) => {
+      lastActivity = Date.now();
       const chunk = d.toString();
       if (stream === 'stdout') out += chunk;
       else err += chunk;
