@@ -1,11 +1,11 @@
 name: Deploy discord-agent to AWS (ECS Fargate)
 
 # Builds the deploy/discord-agent Docker image and ships it to Amazon ECR,
-# then deploys it to the discord-agent ECS Fargate service. Text-only by
-# default (DISABLE_VOICE=1) so no whisper model/CPU is needed on the host.
+# then deploys it to the discord-agent ECS Fargate service. Text-only
+# (no whisper/ffmpeg) so the image stays thin and builds fast.
 #
-# NOTE: AWS App Runner is closed to new customers, so this targets ECS Fargate
-# (the deployed host). See specs/007-aws-apprunner-deploy/research.md.
+# Docker layer caching (GitHub Actions cache) is enabled so repeat deploys
+# reuse cached apt/npm/opencode layers instead of re-downloading (~1min).
 
 on:
   push:
@@ -16,9 +16,8 @@ on:
   workflow_dispatch:
 
 # Auth via a dedicated IAM user's access keys stored as GitHub repo secrets
-# (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY). Cert-based GitHub OIDC was
-# unreliable here (thumbprint rotation), so we use the classic static-key CI
-# path. Keys are scoped to the github-actions-deploy user (ECR+ECS only).
+# (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY). Keys are scoped to the
+# github-actions-deploy user (ECR+ECS only).
 permissions:
   contents: read
 
@@ -37,6 +36,8 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build.outputs.imageid }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,16 +53,21 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push image to ECR (SHA + latest)
-        working-directory: ${{ env.APP_DIR }}
-        env:
-          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
-        run: |
-          docker build --platform linux/amd64 \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build, tag, and push image to ECR (SHA + latest, with cache)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.APP_DIR }}
+          file: ${{ env.APP_DIR }}/Dockerfile
+          push: true
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
       - name: Deploy to ECS Fargate
         env:
