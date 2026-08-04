@@ -1,0 +1,6 @@
+#!/bin/sh
+case "$BRICK_STUB" in
+  ok)      sleep 1; echo "Sure, here is the plan. completed in 512ms model";;
+  slow)    sleep 30 ;;
+  fail)    echo "provider error dur 900ms" >&2; exit 1 ;;
+esac

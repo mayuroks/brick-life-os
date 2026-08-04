@@ -1,22 +1,17 @@
 # Life OS Agent on Discord — thin deploy image (text-only).
-# Uses a glibc base so the Node bridge + headless opencode agent run.
+# glibc base (node:24-slim) so the Node bridge + headless opencode agent run.
 # No whisper.cpp / ffmpeg / speech model: voice transcription is a deferred
 # external-service follow-up, so this image only serves text.
-FROM --platform=linux/amd64 ubuntu:26.04
+FROM --platform=linux/amd64 node:24-slim
 
-# --- Base tooling (minimal) ---
+# --- Base tooling (minimal; Node 24 already present, no NodeSource step) ---
+# curl/ca-certificates are needed by the opencode installer below.
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      curl ca-certificates git python3 \
+RUN apt-get update && apt-get install -y --no-install-recommends git python3 curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # uv (for the opencode atlassian/Jira MCP via uvx)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-# --- Node 24 LTS (glibc) via NodeSource ---
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
 
 # --- opencode CLI (official installer) ---
 ENV OPENCODE_INSTALL_DIR=/usr/local/bin

@@ -1,6 +1,7 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { runAgent } from '../agent/client.js';
 import { ChannelQueue } from './queue.js';
+import { log } from '../log.js';
 
 const STATUS_PHRASES = [
   'Wondering',
@@ -55,14 +56,11 @@ export function createBridge(cfg, state) {
 
   client.once('ready', () => {
     state.bridgeUp = true;
-    console.log(`Bridge logged in as ${client.user?.tag}`);
+    log('info', 'bridge.ready', { service: 'bridge', user: client.user?.tag }, 'Bridge ready');
   });
 
   client.on('messageCreate', (message) => {
     const text = (message.content || '').trim();
-    console.log(
-      `[discord] msg ${message.channelId} @${message.author?.username}: ${JSON.stringify(text)}`,
-    );
 
     // Ignore the bot's own messages and other bots (no reply loops).
     if (message.author.bot) return;
@@ -77,6 +75,12 @@ export function createBridge(cfg, state) {
       return;
     }
     if (!text) return;
+
+    log('info', 'msg.queued', {
+      service: 'bridge',
+      channelId: message.channelId,
+      user: message.author?.username,
+    });
 
     queue.enqueue(message.channelId, async () => {
       let status;
@@ -109,7 +113,7 @@ export function createBridge(cfg, state) {
 
   process.on('SIGTERM', () => client.destroy());
   client.login(cfg.token).catch((e) => {
-    console.error(`Bridge login failed: ${e.message}`);
+    log('error', 'bridge.login-failed', { service: 'bridge' }, `Bridge login failed: ${e.message}`);
     process.exit(1);
   });
 
