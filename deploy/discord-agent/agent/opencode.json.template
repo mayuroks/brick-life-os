@@ -5,7 +5,7 @@
   },
   "model": "${AGENT_MODEL}",
   "skills": {
-    "paths": [".skill"]
+    "paths": ["skill"]
   },
   "mcp": {
     "atlassian": {

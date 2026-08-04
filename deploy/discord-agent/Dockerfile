@@ -13,6 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends git python3 cur
 # uv (for the opencode atlassian/Jira MCP via uvx)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
+# Pre-install mcp-atlassian into the uv tool cache at build time so a fresh
+# container does NOT cold-download it on first agent run. Without this, uvx's
+# one-time package fetch (~1-2 min) exceeds opencode's MCP init timeout and the
+# Jira MCP reports "server unavailable" (making Jira unreadable on ECS).
+RUN uv tool install mcp-atlassian
+
 # --- opencode CLI (official installer) ---
 ENV OPENCODE_INSTALL_DIR=/usr/local/bin
 RUN curl -fsSL https://opencode.ai/install | bash \
