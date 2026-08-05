@@ -10,7 +10,7 @@
   "mcp": {
     "atlassian": {
       "type": "local",
-      "command": ["uvx", "mcp-atlassian"],
+      "command": ["uv", "tool", "run", "mcp-atlassian"],
       "enabled": true,
       "environment": {
         "JIRA_URL": "${JIRA_URL}",

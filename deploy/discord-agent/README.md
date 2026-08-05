@@ -35,7 +35,11 @@ agent reply ◄── bridge posts reply to same channel ◄─── agent
 - Plain messages only; no slash commands required (v1).
 - `GET /health` reports agent + bridge readiness.
 - Multi-second agent turns are fine — Discord gateway replies have no 3-second deadline.
-- Per-channel serialization keeps replies from interleaving on burst traffic.
+- Global single-slot serialization: exactly one agent turn runs at a time across all
+  channels (no OOM on the small free-tier host); a burst of messages backs up in memory
+  and is answered in order, never dropped.
+- A fixed `--title "life-os-agent"` is passed to each deployed `opencode run` so the
+  throwaway auto-title LLM call (~20s, invisible to a bot) is skipped.
 
 ## Local run
 

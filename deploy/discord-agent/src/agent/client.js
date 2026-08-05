@@ -60,9 +60,13 @@ export function runAgent(serveUrl, message, opts = {}) {
       // Force debug logging through stderr regardless of TTY.
       ...(process.env.OPENCODE_LOG_LEVEL ? {} : { OPENCODE_LOG_LEVEL: 'DEBUG' }),
     };
+    // A fixed non-empty --title is passed so opencode short-circuits its throwaway
+    // auto-title LLM call (ensureTitle only fires on the default "New session - <ISO>"
+    // title). Saves ~20s per message for a Discord bot that never shows session titles.
+    // Must be non-empty: an empty string is treated as "no title" and re-triggers it.
     const child = spawn(
       'opencode',
-      ['run', '--dir', AGENT_DIR, '--print-logs', '--log-level', 'DEBUG', '--thinking', message],
+      ['run', '--dir', AGENT_DIR, '--print-logs', '--log-level', 'DEBUG', '--title', 'life-os-agent', '--thinking', message],
       {
         cwd: AGENT_DIR,
         stdio: ['ignore', 'pipe', 'pipe'],
