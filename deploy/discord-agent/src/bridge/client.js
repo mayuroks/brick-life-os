@@ -23,6 +23,31 @@ const STATUS_PHRASES = [
 
 const STATUS_DOTS = ['', '.', '..', '...'];
 
+// Discord's message content limit.
+const MAX_MSG_LEN = 2000;
+
+/**
+ * Split a reply into Discord-safe chunks of at most MAX_MSG_LEN chars without
+ * breaking words. Returns [firstChunk, ...rest] where firstChunk edits the
+ * status message and rest are posted as follow-up messages.
+ */
+function chunkReply(text) {
+  if (!text) return [''];
+  if (text.length <= MAX_MSG_LEN) return [text];
+  const chunks = [];
+  let remaining = text;
+  while (remaining.length > MAX_MSG_LEN) {
+    let cut = remaining.lastIndexOf('\n', MAX_MSG_LEN);
+    if (cut <= 0) cut = remaining.lastIndexOf(' ', MAX_MSG_LEN);
+    if (cut <= 0) cut = MAX_MSG_LEN;
+    chunks.push(remaining.slice(0, cut).trim());
+    remaining = remaining.slice(cut).trim();
+  }
+  if (remaining) chunks.push(remaining);
+  return chunks;
+}
+
+
 /**
  * Rotate a random loading status on `statusMsg` every 2.5s until cleared.
  * @param {import('discord.js').Message} statusMsg
@@ -95,7 +120,11 @@ export function createBridge(cfg, state) {
         clearInterval(timer);
         console.log(`[discord] <- agent (${Date.now() - t1}ms): ${JSON.stringify(reply)}`);
         state.agentUp = true;
-        await status.edit(reply);
+        const chunks = chunkReply(reply);
+        await status.edit(chunks[0]).catch(() => chunks[0] && message.reply(chunks[0]).catch(() => {}));
+        for (const extra of chunks.slice(1)) {
+          await message.channel.send(extra).catch((e) => log('warn', 'bridge.reply-extra-failed', { service: 'bridge' }, `Extra reply failed: ${e?.message}`));
+        }
         console.log(`[discord] reply posted to ${message.channelId}`);
       } catch (err) {
         clearInterval(timer);

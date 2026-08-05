@@ -28,6 +28,19 @@ function bound(text, limit) {
 }
 
 /**
+ * Strip a leading model "Thinking: ..." block if it leaked into the reply, so
+ * internal reasoning is never shown to the Discord user. Handles both a single
+ * "Thinking: ..." line and a multi-line block that ends at the first blank line.
+ */
+function stripThinking(text) {
+  if (typeof text !== 'string') return '';
+  let t = text.replace(/^\s*Thinking:.*(?:\r?\n|$)/, '').trimStart();
+  // Defensive: if a longer multi-line thinking block remains (no blank line
+  // after the marker), fall back to trimming leading whitespace only.
+  return t.trim();
+}
+
+/**
  * Send a message to the headless agent (`opencode serve`) via
  * `opencode run --attach <serveUrl>` and return its reply (FR-002).
  * Failure (provider/Jira unreachable, timeout) rejects with a friendly message.
@@ -66,7 +79,7 @@ export function runAgent(serveUrl, message, opts = {}) {
     // Must be non-empty: an empty string is treated as "no title" and re-triggers it.
     const child = spawn(
       'opencode',
-      ['run', '--dir', AGENT_DIR, '--print-logs', '--log-level', 'DEBUG', '--title', 'life-os-agent', '--thinking', message],
+      ['run', '--dir', AGENT_DIR, '--print-logs', '--log-level', 'DEBUG', '--title', 'life-os-agent', message],
       {
         cwd: AGENT_DIR,
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -153,7 +166,7 @@ export function runAgent(serveUrl, message, opts = {}) {
 
     child.on('close', (code) => {
       if (state.settled) return;
-      const text = out.trim();
+      const text = stripThinking(out);
       const errText = err.trim();
       const fields = {
         exitCode: code,
