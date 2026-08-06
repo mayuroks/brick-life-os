@@ -1,3 +1,7 @@
+# [LEGACY/ARCHIVED] — Render free-tier blueprint (Render retired), superseded
+# by the EC2 single-box native path (deploy/ec2-single-box/ + deploy/README.md).
+# Do not follow. Region is ap-south-1, host is a 1GB+2GB-swap t3.micro.
+
 # Render blueprint: Life OS agent exposed as a Discord surface.
 # Deploys via Docker (see Dockerfile) on the free tier, driven from GitHub.
 services:

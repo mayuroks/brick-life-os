@@ -1,3 +1,8 @@
+# [LEGACY/ARCHIVED] — Docker/Fargate/ECR build artifact, superseded by the EC2
+# single-box native path (deploy/ec2-single-box/ + deploy/README.md). Do not
+# follow. Region is ap-south-1, host is a 1GB+2GB-swap t3.micro. Historically
+# consumed only by the now-deleted .github/workflows/deploy-aws.yml (Phase 1).
+
 # Life OS Agent on Discord — thin deploy image.
 # glibc base (node:24-slim) so the Node bridge + headless opencode agent run.
 # No whisper.cpp / ffmpeg / speech model: voice transcription happens OFF-BOX

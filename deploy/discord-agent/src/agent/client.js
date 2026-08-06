@@ -65,9 +65,9 @@ export function runAgent(serveUrl, message, opts = {}) {
     // ran in the wrong dir and fell back to a default model. --dir pins it to
     // the bundled agent dir that holds opencode.json + AGENTS.md.
     // --print-logs + --log-level DEBUG + --thinking make the run verbose so a
-    // silent hang is diagnosable in CloudWatch (network calls, model stream,
-    // thinking blocks). We log these preconditions at spawn so a stuck run is
-    // distinguishable from a broken one.
+    // silent hang is diagnosable in journalctl on the EC2 box (network calls,
+    // model stream, thinking blocks). We log these preconditions at spawn so a
+    // stuck run is distinguishable from a broken one.
     const env = {
       ...process.env,
       // Force debug logging through stderr regardless of TTY.

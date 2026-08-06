@@ -1,3 +1,5 @@
+> **[LEGACY/ARCHIVED] — historical spec for a retired host path, superseded by the EC2 single-box native deploy (`deploy/ec2-single-box/` + `deploy/README.md`). Kept as audit history — do not follow. Region is `ap-south-1`, host is a 1GB+2GB-swap `t3.micro`.**
+
 # Specification Quality Checklist: AWS App Runner Deployment (Text-First)
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning

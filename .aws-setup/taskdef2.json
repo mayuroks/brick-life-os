@@ -1,7 +1,10 @@
 {
+  "_legacy_banner": "[LEGACY/ARCHIVED] - .aws-setup us-east-1/Fargate/OIDC/ECS-exec artifacts superseded by the EC2 single-box native path (deploy/ec2-single-box/ + deploy/README.md). Do not follow. Region is ap-south-1, host is a 1GB+2GB-swap t3.micro.",
   "family": "discord-agent",
   "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
   "cpu": "256",
   "memory": "512",
   "executionRoleArn": "arn:aws:iam::243746944554:role/ecs-task-execution",
@@ -10,18 +13,47 @@
       "name": "discord-agent",
       "image": "243746944554.dkr.ecr.us-east-1.amazonaws.com/discord-agent:latest",
       "essential": true,
-      "portMappings": [ { "containerPort": 3000, "protocol": "tcp" } ],
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
       "environment": [
-        { "name": "DISABLE_VOICE", "value": "1" },
-        { "name": "PORT", "value": "3000" },
-        { "name": "JIRA_URL", "value": "https://mayurzenith.atlassian.net" },
-        { "name": "OPENCODE_SERVE_URL", "value": "http://127.0.0.1:4096" }
+        {
+          "name": "DISABLE_VOICE",
+          "value": "1"
+        },
+        {
+          "name": "PORT",
+          "value": "3000"
+        },
+        {
+          "name": "JIRA_URL",
+          "value": "https://mayurzenith.atlassian.net"
+        },
+        {
+          "name": "OPENCODE_SERVE_URL",
+          "value": "http://127.0.0.1:4096"
+        }
       ],
       "secrets": [
-        { "name": "DISCORD_BOT_TOKEN", "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/DISCORD_BOT_TOKEN" },
-        { "name": "JIRA_USERNAME", "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/JIRA_USERNAME" },
-        { "name": "JIRA_API_TOKEN", "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/JIRA_API_TOKEN" },
-        { "name": "OPENROUTER_API_KEY", "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/OPENROUTER_API_KEY" }
+        {
+          "name": "DISCORD_BOT_TOKEN",
+          "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/DISCORD_BOT_TOKEN"
+        },
+        {
+          "name": "JIRA_USERNAME",
+          "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/JIRA_USERNAME"
+        },
+        {
+          "name": "JIRA_API_TOKEN",
+          "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/JIRA_API_TOKEN"
+        },
+        {
+          "name": "OPENROUTER_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:243746944554:parameter/discord-agent/OPENROUTER_API_KEY"
+        }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",

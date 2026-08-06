@@ -1,5 +1,11 @@
 # Agent Handover: Project "Brick" (Discord-Jira Bot POC)
 
+> **[LEGACY/ARCHIVED] — this handover describes the retired Render + local
+> whisper path, superseded by the EC2 single-box native deploy
+> (`deploy/ec2-single-box/` + `deploy/README.md`). Do not follow. Region is
+> `ap-south-1`, host is a 1GB+2GB-swap `t3.micro`, voice is Groq STT (not
+> whisper), logs are journalctl (not Render/CloudWatch).**
+
 ## Render Ubuntu 26.04 deployment (added 2026-08-03, feature 005)
 * Deploy image rebased from `node:20-alpine` to **`ubuntu:26.04` (amd64)** —
   glibc base so whisper-cli/ffmpeg/opencode all run. Cloud **voice transcription** is now in scope

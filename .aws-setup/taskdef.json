@@ -1,7 +1,10 @@
 {
+  "_legacy_banner": "[LEGACY/ARCHIVED] - .aws-setup us-east-1/Fargate/OIDC/ECS-exec artifacts superseded by the EC2 single-box native path (deploy/ec2-single-box/ + deploy/README.md). Do not follow. Region is ap-south-1, host is a 1GB+2GB-swap t3.micro.",
   "family": "discord-agent",
   "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
   "cpu": "256",
   "memory": "512",
   "executionRoleArn": "arn:aws:iam::243746944554:role/ecs-task-execution",
@@ -11,12 +14,24 @@
       "image": "243746944554.dkr.ecr.us-east-1.amazonaws.com/discord-agent:latest",
       "essential": true,
       "portMappings": [
-        { "containerPort": 3000, "protocol": "tcp" }
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
       ],
       "environment": [
-        { "name": "DISABLE_VOICE", "value": "1" },
-        { "name": "PORT", "value": "3000" },
-        { "name": "AGENT_MODEL", "value": "openrouter/deepseek/deepseek-v4-flash-0731" }
+        {
+          "name": "DISABLE_VOICE",
+          "value": "1"
+        },
+        {
+          "name": "PORT",
+          "value": "3000"
+        },
+        {
+          "name": "AGENT_MODEL",
+          "value": "openrouter/deepseek/deepseek-v4-flash-0731"
+        }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",

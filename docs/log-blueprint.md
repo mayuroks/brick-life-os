@@ -1,5 +1,11 @@
 # Log Blueprint — Life OS Discord Agent (AWS ECS Fargate)
 
+> **[LEGACY/ARCHIVED] — this document describes the retired ECS Fargate /
+> CloudWatch `/ecs/discord-agent` / ECS-Exec/SSM observability path, superseded
+> by the EC2 single-box native path (deploy/ec2-single-box/ + deploy/README.md).
+> The live box uses **journalctl** + `/health:3000`, NOT CloudWatch/ECS-Exec.
+> Do not follow the SSM/ECS-Exec or CloudWatch instructions below.**
+
 A visual map of **where the Discord agent emits logs and how to read them**,
 built to diagnose the `run.stall` hang (agent goes quiet ~2min after the model
 stream starts) without guessing.

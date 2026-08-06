@@ -1,5 +1,7 @@
 # Life OS Agent on Discord
 
+> **[LEGACY/ARCHIVED] — superseded by the EC2 single-box path (`deploy/ec2-single-box/` + `deploy/README.md`). Do not follow. Region is `ap-south-1`, host is a 1GB+2GB-swap `t3.micro`. The host is **EC2 native** (not Fargate), auth is **IAM keys** (not OIDC), and voice is **Groq STT** (already shipped — no local whisper, no `DISABLE_VOICE`). The "Deploy to Render" section below is dead (Render retired).**
+
 Deploys the **Life OS agent** (the `001` opencode agent with its skills and
 Jira MCP) as a **Discord surface**, driven from this GitHub repo. You
 send any agent command as a plain channel message (typed or voice-dictated) and

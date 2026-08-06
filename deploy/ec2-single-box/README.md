@@ -46,4 +46,4 @@ ssh -i deploy/ec2-single-box/lifeos-box.pem ubuntu@<BOX_IP> \
   'systemctl is-active discord-agent; printenv GROQ_API_KEY; curl -s localhost:3000/health'
 ```
 
-Box IP: `54.242.7.113` (override with `BOX_IP=...` on any of the scripts).
+Box IP: `15.252.6.196` (the live `lifeos-box`; override with `BOX_IP=...` on any of the scripts).
