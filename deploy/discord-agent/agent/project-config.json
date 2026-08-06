@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "feature": "Life OS Setup",
-  "description": "Confirmed setup-time values for the Life OS agent. Jira site URL + MCP server name are provided; project keys are DERIVED at runtime by querying Jira via the MCP server (project_discovery), NOT entered manually. Run ./scripts/lifeos-doctor.sh to verify config completeness + connectivity. This file is the single place the Jira config, skills, streak tracker, calendar, and persona workstreams read their runtime values from.",
+  "description": "Confirmed setup-time values for the Life OS agent. Jira site URL + MCP server name are provided; project keys are PRE-RESOLVED (see project_discovery.key_overrides, stamped 2026-08-02) and must NOT be re-derived from Jira at run time. Run ./scripts/lifeos-doctor.sh to verify config completeness + connectivity. This file is the single place the Jira config, skills, streak tracker, calendar, and persona workstreams read their runtime values from.",
   "jira": {
     "site_url": "https://mayurzenith.atlassian.net",
     "mcp": {
@@ -11,8 +11,8 @@
       "note": "Jira MCP server 'atlassian' (sooperset/mcp-atlassian via uvx). Probe OK: 63 tools, jira_get_all_projects returned live data. Auth = API token."
     },
     "project_discovery": {
-      "mode": "runtime_query",
-      "method": "Resolve the real key for each domain by querying Jira via the MCP server (e.g. discover/list projects), matching on project name or lead. Do NOT hardcode static keys. The 9 domain names below are the canonical routing map used by the capture skill; the key for each is DERIVED from Jira at setup/run time.",
+      "mode": "pre_resolved",
+      "method": "Do NOT call get_all_projects / project discovery at run time. Project keys are pre-resolved live from Jira on 2026-08-02 and hardcoded in the key_overrides map below (source of truth). Use key_overrides directly for routing; never re-derive keys from Jira.",
       "required_domains": [
         "Career",
         "Family",
@@ -38,7 +38,7 @@
       }
     },
     "projects": {
-      "note": "Resolved at runtime from Jira via MCP (project_discovery). keys live here only after discovery runs."
+      "note": "Pre-resolved : project keys live in project_discovery.key_overrides (stamped 2026-08-02). Not re-derived at run time."
     },
     "workflow": [
       "Backlog",
