@@ -11,7 +11,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BOX_DIR="$ROOT/deploy/ec2-single-box"
-BOX_IP="${BOX_IP:-54.242.7.113}"
+BOX_IP="${BOX_IP:-15.252.6.196}"
 PEM="$BOX_DIR/lifeos-box.pem"
 APP_SRC="$ROOT/deploy/discord-agent"
 REMOTE_APP="/home/ubuntu/discord-agent"

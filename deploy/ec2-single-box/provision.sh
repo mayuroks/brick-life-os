@@ -15,13 +15,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 AWS="$ROOT/aws.sh"
 
-REGION="${REGION:-us-east-1}"
+REGION="${REGION:-ap-south-1}"
 NAME="lifeos-box"
 INSTANCE_TYPE="${INSTANCE_TYPE:-t3.micro}"
-# Ubuntu 24.04 LTS amd64 (hvm-ssd-gp3), latest as of 2026-07-14.
-AMI="${AMI:-ami-052355af2a014bd2c}"
+# Ubuntu 24.04 LTS amd64 (hvm-ssd-gp3) in ap-south-1, latest as of 2026-07-14.
+AMI="${AMI:-ami-07e5ce642bbc48c0d}"
 SWAP_GB="${SWAP_GB:-2}"
-SSH_SOURCE="${SSH_SOURCE:-122.171.23.95/32}"
+SSH_SOURCE="${SSH_SOURCE:-122.171.22.59/32}"
 KEY_NAME="${KEY_NAME:-lifeos-box}"
 SG_NAME="${SG_NAME:-lifeos-box-sg}"
 PEM="$ROOT/deploy/ec2-single-box/$KEY_NAME.pem"
@@ -101,7 +101,7 @@ PUBIP="$("$AWS" ec2 describe-instances --instance-ids "$INSTANCE_ID" --region "$
 
 echo
 echo "=== DONE ==="
-echo "  Instance : $INSTANCE_ID   ($INSTANCE_TYPE, us-east-1)"
+echo "  Instance : $INSTANCE_ID   ($INSTANCE_TYPE, $REGION)"
 echo "  Public IP: $PUBIP"
 echo "  Key      : $PEM"
 echo "  Swap     : ${SWAP_GB}G enabled via cloud-init; verify with:"
