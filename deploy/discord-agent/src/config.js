@@ -38,5 +38,39 @@ export function loadConfig(env = process.env) {
     jiraToken: env.JIRA_API_TOKEN,
     serveUrl: env.OPENCODE_SERVE_URL || 'http://127.0.0.1:4096',
     port: Number(env.PORT || 3000),
+    groqApiKey: env.GROQ_API_KEY || '',
+    groqTranscribeUrl: GROQ_TRANSCRIBE_URL,
+    groqModel: GROQ_TRANSCRIBE_MODEL,
   };
+}
+
+/**
+ * Groq STT transcription endpoint and model. Kept as exported constants so the
+ * transcription client stays decoupled from hardcoded strings.
+ */
+export const GROQ_TRANSCRIBE_URL =
+  'https://api.groq.com/openai/v1/audio/transcriptions';
+export const GROQ_TRANSCRIBE_MODEL = 'whisper-large-v3-turbo';
+
+/**
+ * Lazy GROQ_API_KEY validation (design.md Open Questions: lazy is default).
+ * Unlike the boot-time required secrets, the key is only demanded when a voice
+ * note actually needs transcribing, so the bot boots fine for pure-text use
+ * (FR-007). Throws with clear next steps if missing.
+ * @returns {string} the API key.
+ */
+export function requireGroqKey(env = process.env) {
+  if (!env.GROQ_API_KEY) {
+    throw new Error(
+      [
+        'Missing GROQ_API_KEY (needed to transcribe voice notes)',
+        '',
+        'To fix:',
+        '  1. Add GROQ_API_KEY= to .env',
+        '  2. Respect it by using the key from your Groq console',
+        '  3. Re-run the bot, then send the voice note again',
+      ].join('\n'),
+    );
+  }
+  return env.GROQ_API_KEY;
 }

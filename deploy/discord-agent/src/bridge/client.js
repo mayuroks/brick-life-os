@@ -1,6 +1,7 @@
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { runAgent } from '../agent/client.js';
 import { ChannelQueue } from './queue.js';
+import { transcribe } from '../transcribe/index.js';
 import { log } from '../log.js';
 
 const STATUS_PHRASES = [
@@ -62,6 +63,128 @@ function startStatus(statusMsg) {
 }
 
 /**
+ * Detect a Discord voice note (FR-006): a message flagged as a voice message,
+ * OR an audio attachment with no typed text. Typed text always wins — a message
+ * with both text and audio is treated as text (voice path never triggers).
+ * @param {import('discord.js').Message} message
+ * @returns {boolean}
+ */
+function isVoiceMessage(message) {
+  if (!message) return false;
+  const text = (message.content || '').trim();
+  if (text) return false;
+  try {
+    if (message.flags?.has?.(MessageFlags.IsVoiceMessage)) return true;
+  } catch {
+    // fall through to attachment check
+  }
+  return Boolean(message.attachments && message.attachments.size > 0);
+}
+
+/**
+ * Run a single agent turn: status → agent → chunked reply (FR-003, FR-005).
+ * Shared by the typed-text path and the transcribed-voice path so a voice note
+ * behaves exactly like a typed message.
+ * @param {import('discord.js').Message} message
+ * @param {{serveUrl:string}} cfg
+ * @param {{agentUp:boolean}} state
+ * @param {string} payload - the message text to send to the agent.
+ * @param {import('discord.js').Message} [existingStatus] - reuse an already
+ *        posted status message instead of replying a fresh one, so a voice
+ *        turn updates a single message end-to-end (Listening → Wondering →
+ *        reply) instead of leaving a separate ghost status.
+ */
+async function runTurn(message, cfg, state, payload, existingStatus) {
+  let status;
+  let timer;
+  try {
+    console.log(`[discord] -> agent: ${JSON.stringify(payload)}`);
+    if (existingStatus) {
+      status = existingStatus;
+      await status.edit('⏳ **Wondering**').catch(() => {});
+    } else {
+      status = await message.reply('⏳ **Wondering**');
+    }
+    timer = startStatus(status);
+    const t1 = Date.now();
+    const reply = await runAgent(cfg.serveUrl, payload);
+    clearInterval(timer);
+    console.log(`[discord] <- agent (${Date.now() - t1}ms): ${JSON.stringify(reply)}`);
+    state.agentUp = true;
+    const chunks = chunkReply(reply);
+    await status.edit(chunks[0]).catch(() => chunks[0] && message.reply(chunks[0]).catch(() => {}));
+    for (const extra of chunks.slice(1)) {
+      await message.channel.send(extra).catch((e) => log('warn', 'bridge.reply-extra-failed', { service: 'bridge' }, `Extra reply failed: ${e?.message}`));
+    }
+    console.log(`[discord] reply posted to ${message.channelId}`);
+  } catch (err) {
+    clearInterval(timer);
+    state.agentUp = false;
+    console.error(`[discord] agent error: ${err?.message}`);
+    const msg = err?.message || 'Something went wrong. Try again.';
+    if (status) {
+      await status.edit(msg).catch(() => {});
+    } else {
+      await message.reply(msg).catch(() => {});
+    }
+  }
+}
+
+/**
+ * Route a voice note: transcribe via Groq, then either enqueue the transcript
+ * as a normal agent turn (success) or reply with a clear notice and keep the
+ * bridge alive (error/empty) — no retry, no fallback (FR-004).
+ * @param {import('discord.js').Message} message
+ * @param {{serveUrl:string}} cfg
+ * @param {{agentUp:boolean}} state
+ */
+async function handleVoice(message, cfg, state) {
+  let status;
+  let timer;
+  try {
+    const attachment = message.attachments?.first();
+    const url = attachment?.url;
+    if (!url) {
+      await message.reply("🎙️ I couldn't see an audio attachment to transcribe.").catch(() => {});
+      return;
+    }
+
+    console.log('[discord] -> groq transcribe');
+    status = await message.reply('🎙️ **Listening**');
+    timer = startStatus(status);
+    const t1 = Date.now();
+    const { status: tStatus, text: transcript } = await transcribe(url);
+    clearInterval(timer);
+    console.log(`[discord] <- transcript (${Date.now() - t1}ms): ${JSON.stringify(transcript)} [${tStatus}]`);
+
+    if (tStatus === 'error') {
+      log('warn', 'voice.transcribe-error', { service: 'bridge', channelId: message.channelId }, 'Voice transcription failed');
+      await status.edit("Sorry, I couldn't transcribe that audio. Try again or send a text message.").catch(() => {});
+      return;
+    }
+    if (tStatus === 'empty' || !transcript) {
+      log('info', 'voice.no-speech', { service: 'bridge', channelId: message.channelId }, 'No speech detected in voice note');
+      await status.edit("🎙️ I didn't catch that — try a text message or speak up.").catch(() => {});
+      return;
+    }
+
+    // Success: reuse the exact text turn path (FR-003), and hand the current
+    // "Listening" status message into runTurn so it becomes the single reply
+    // message (Listening → Wondering → answer) — no separate "Got it" ghost.
+    return runTurn(message, cfg, state, transcript, status);
+  } catch (err) {
+    clearInterval(timer);
+    log('error', 'voice.handling-failed', { service: 'bridge', channelId: message.channelId }, `Voice handling failed: ${err?.message}`);
+    const msg = err?.message || "'What?' is a great start — but try a text message instead.";
+    if (status) {
+      await status.edit(msg).catch(() => {});
+    } else {
+      await message.reply(msg).catch(() => {});
+    }
+  }
+}
+
+/**
  * Create the Discord Gateway bridge (FR-001, FR-005).
  * Reads plain channel messages and sends them to the headless agent; posts the
  * agent's reply back to the same channel.
@@ -85,58 +208,25 @@ export function createBridge(cfg, state) {
   });
 
   client.on('messageCreate', (message) => {
-    const text = (message.content || '').trim();
-
     // Ignore the bot's own messages and other bots (no reply loops).
     if (message.author.bot) return;
 
-    // Voice transcription is fully removed (text-only agent): any message with
-    // no typed text but a transcribable audio attachment is acknowledged with a
-    // notice instead of being processed. Empty text with no audio is dropped.
-    if (!text && message.attachments?.size > 0) {
-      message
-        .reply('🎙️ Voice transcription is off — send me a text message instead.')
-        .catch(() => {});
-      return;
-    }
-    if (!text) return;
+    const text = (message.content || '').trim();
+    const isVoice = !text && isVoiceMessage(message);
+
+    // Empty text with no audio is dropped (nothing to act on).
+    if (!text && !isVoice) return;
 
     log('info', 'msg.queued', {
       service: 'bridge',
       channelId: message.channelId,
       user: message.author?.username,
+      voice: isVoice,
     });
 
-    queue.enqueue(message.channelId, async () => {
-      let status;
-      let timer;
-      let payload = text;
-      try {
-        console.log(`[discord] -> agent: ${JSON.stringify(payload)}`);
-        status = await message.reply('⏳ **Wondering**');
-        timer = startStatus(status);
-        const t1 = Date.now();
-        const reply = await runAgent(cfg.serveUrl, payload);
-        clearInterval(timer);
-        console.log(`[discord] <- agent (${Date.now() - t1}ms): ${JSON.stringify(reply)}`);
-        state.agentUp = true;
-        const chunks = chunkReply(reply);
-        await status.edit(chunks[0]).catch(() => chunks[0] && message.reply(chunks[0]).catch(() => {}));
-        for (const extra of chunks.slice(1)) {
-          await message.channel.send(extra).catch((e) => log('warn', 'bridge.reply-extra-failed', { service: 'bridge' }, `Extra reply failed: ${e?.message}`));
-        }
-        console.log(`[discord] reply posted to ${message.channelId}`);
-      } catch (err) {
-        clearInterval(timer);
-        state.agentUp = false;
-        console.error(`[discord] agent error: ${err?.message}`);
-        const msg = err?.message || 'Something went wrong. Try again.';
-        if (status) {
-          await status.edit(msg).catch(() => {});
-        } else {
-          await message.reply(msg).catch(() => {});
-        }
-      }
+    queue.enqueue(message.channelId, () => {
+      if (isVoice) return handleVoice(message, cfg, state);
+      return runTurn(message, cfg, state, text);
     });
   });
 

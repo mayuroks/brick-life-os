@@ -1,7 +1,8 @@
-# Life OS Agent on Discord — thin deploy image (text-only).
+# Life OS Agent on Discord — thin deploy image.
 # glibc base (node:24-slim) so the Node bridge + headless opencode agent run.
-# No whisper.cpp / ffmpeg / speech model: voice transcription is a deferred
-# external-service follow-up, so this image only serves text.
+# No whisper.cpp / ffmpeg / speech model: voice transcription happens OFF-BOX
+# via Groq STT (URL pass-through) — the host never stores or processes audio,
+# so the image stays thin (SC-001/SC-005).
 FROM --platform=linux/amd64 node:24-slim
 
 # --- Base tooling (minimal; Node 24 already present, no NodeSource step) ---
@@ -27,7 +28,7 @@ RUN curl -fsSL https://opencode.ai/install | bash \
 
 WORKDIR /app
 
-# Install bridge deps (no ffmpeg-static / whisper — text-only agent)
+# Install bridge deps (no ffmpeg-static / whisper — transcription is off-box)
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
@@ -39,8 +40,9 @@ RUN chmod +x run.sh
 
 ENV NODE_ENV=production
 
-# Text-only: no whisper model/binary on the host.
-ENV DISABLE_VOICE=1
+# No whisper model/binary on the host — voice notes are transcribed by Groq STT
+# via the CDN URL (config.js / transcribe/groq.js). GROQ_API_KEY is optional at
+# boot and validated lazily on the first voice note.
 
 # The Fargate task maps public :3000 -> container 3000.
 EXPOSE 3000
