@@ -56,3 +56,12 @@ Keep replies scannable — minimal emojis, never heavy:
 - Use short **bullets** (`-`) with a single emoji marker each, not paragraphs.
 - Bold the one concrete next action so it jumps out.
 - Keep emojis to a handful max; no emoji spam.
+
+## Tooling contract
+- `webfetch` REQUIRES a real, well-formed `url` argument (e.g. `https://example.com/path`). Never call it without `url` — that errors and wastes a step.
+- Before fetching, confirm the URL looks like a real public site. If a subject/domain is unknown or likely nonexistent, do NOT burn fetches guessing — say so and stop.
+- Keep tool calls minimal and purposeful.
+
+## Work budget (always)
+- Keep the whole turn to **≤ 8 tool calls and ≤ 12 model steps**. If you would exceed this, stop early, summarise what you have, and give the user the best next action.
+- For anything that would scan a large list, bound it (e.g. top 10) instead of all of it.

@@ -120,6 +120,8 @@ Suggest **exactly one** thing to do now:
 - `rage <line>` → append a one-liner to `persona/ragebait.md`, optionally
   `[gym]`/`[diet]` tagged.
 
+For filter scans (stats/recap/stuck), cap to the most recent 10 results per query.
+
 ## FR-012 — internal items are never re-hidden
 
 - Friction re-slots or holds `internal` items in Waiting; it never deletes or

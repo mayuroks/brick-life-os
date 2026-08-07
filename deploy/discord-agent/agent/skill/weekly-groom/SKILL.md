@@ -82,6 +82,10 @@ Choose what the next week will actually deliver:
 1. From the Ready pool, select **at most `7`** issues (`scoring.weekly_pick_cap`
    in `project-config.json`). Respect the ramp rule — start light; add load
    only as delivery stays green.
+
+Work budget: groom at most the top 10 issues across Backlog+Pipeline in this run. Keep total
+model steps for the whole weekly run under 15; if the backlog is larger, do the highest-impact
+10 and note the remainder for next week.
 2. Transition each pick to **Todo-Week**.
 3. Apply the target-week label `week:YYYY-Www` (ISO, e.g. `week:2026-W33`) to
    each pick so Done-this-week can be compared against the plan (planperfection

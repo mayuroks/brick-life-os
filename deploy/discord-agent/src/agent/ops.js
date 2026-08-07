@@ -23,13 +23,23 @@ export function parseOp(text) {
 
 export function track() {
   const ops = [];
+  const counters = { model: 0, webfetch: 0, webfetchFail: 0 };
   return {
     add(text, ctx = {}) {
       const rec = parseOp(text);
-      if (!rec) return;
-      ops.push(rec);
-      log('info', 'run.op', ctx, 'Operation completed', rec);
+      if (rec) {
+        ops.push(rec);
+        if (rec.op === 'model') counters.model += 1;
+        log('info', 'run.op', ctx, 'Operation completed', rec);
+      }
+      if (/WebFetch/.test(text || '')) {
+        counters.webfetch += 1;
+        if (/(failed|Error|non 2xx|Transport error)/i.test(text)) counters.webfetchFail += 1;
+      }
       return rec;
+    },
+    counters() {
+      return { ...counters };
     },
     summary() {
       return ops.slice();

@@ -26,8 +26,11 @@ the daily loop (`research KEY-42`) or directly.
 1. Read the target issue (`KEY-42`) — its summary, description, current
    research labels, and any existing findings.
 2. Run focused background research on the open question(s) in the description.
-   Keep it bounded and answer-oriented: what is decided, what is uncertain,
-   and what the issue's next concrete step should be.
+   **Fetch budget: max 5 web fetches total. Validate each URL is a real public
+   site before fetching; if the subject or domain is unknown, stop and report
+   "could not find a reliable source" instead of guessing URLs.** Keep it
+   bounded and answer-oriented: what is decided, what is uncertain, and what
+   the issue's next concrete step should be.
 3. **Write findings back** into the issue description:
    - Append a **`## Research`** section (or a dated bullet under an existing
      one) with the key findings and **citations/sources**.

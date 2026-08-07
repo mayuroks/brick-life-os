@@ -59,6 +59,8 @@ export function runAgent(serveUrl, message, opts = {}) {
     const ctx = { service: 'agent', channelId: opts.channelId, run: id };
     const t0 = Date.now();
     const tracker = track();
+    let firstModelSeen = false;
+    let bootMs = -1;
 
     // --dir is required: opencode ignores spawn()'s cwd for project/config
     // discovery (it defaults to the invoking process's dir), so without this it
@@ -134,6 +136,11 @@ export function runAgent(serveUrl, message, opts = {}) {
         text: bound(chunk, CHUNK_LIMIT),
       });
       tracker.add(chunk, ctx);
+      if (!firstModelSeen && /stream providerID=openrouter/.test(chunk)) {
+        firstModelSeen = true;
+        bootMs = Date.now() - t0;
+        log('info', 'run.boot', ctx, 'First model signal reached', { bootMs });
+      }
     };
     child.stdout.on('data', onData('stdout'));
     child.stderr.on('data', onData('stderr'));
@@ -141,9 +148,11 @@ export function runAgent(serveUrl, message, opts = {}) {
     const timer = setTimeout(() => {
       const fields = {
         timeoutMs: timeoutMs,
+        bootMs,
         durationMs: Date.now() - t0,
         capturedOut: bound(out, CAPTURE_LIMIT),
         capturedErr: bound(err, CAPTURE_LIMIT),
+        webfetch: tracker.counters(),
         ops: tracker.summary(),
       };
       log('warn', 'run.timeout', ctx, 'Agent run timed out', fields);
@@ -157,7 +166,9 @@ export function runAgent(serveUrl, message, opts = {}) {
       if (state.settled) return;
       const fields = {
         reason: e.message,
+        bootMs,
         durationMs: Date.now() - t0,
+        webfetch: tracker.counters(),
         ops: tracker.summary(),
       };
       log('error', 'run.failed', ctx, 'Agent spawn failed', fields);
@@ -170,9 +181,11 @@ export function runAgent(serveUrl, message, opts = {}) {
       const errText = err.trim();
       const fields = {
         exitCode: code,
+        bootMs,
         durationMs: Date.now() - t0,
         outBytes: out.length,
         errBytes: err.length,
+        webfetch: tracker.counters(),
         ops: tracker.summary(),
       };
       if (code === 0 && text) {
