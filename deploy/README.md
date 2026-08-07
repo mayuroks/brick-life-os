@@ -54,6 +54,8 @@ bash scripts/aws-stale-check.sh
 - Do **not** run any ECS/Fargate/ECR/App Runner/Render provisioning — billable and legacy.
 - Do **not** reference `us-east-1`, SSM Parameter Store, ECR, CloudWatch `/ecs/`,
   whisper, or `DISABLE_VOICE` as current — every one is legacy.
-- Do **not** edit `deploy/discord-agent/Dockerfile`, `task-def.json`, or
-  `render.yaml` — they are `[LEGACY/ARCHIVED]` Docker/Render/Fargate artifacts.
+- The old `task-def.json` / `render.yaml` Fargate/Render artifacts have been
+  removed. Do **not** edit `deploy/discord-agent/Dockerfile` — it is a
+  `[LEGACY/ARCHIVED]` local-reference-container only; the live host is native
+  EC2 (no Docker).
 - Do **not** commit the real `.env` or any `*.pem` (see repo root `.gitignore`).

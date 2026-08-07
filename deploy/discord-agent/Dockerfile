@@ -8,7 +8,9 @@
 # No whisper.cpp / ffmpeg / speech model: voice transcription happens OFF-BOX
 # via Groq STT (URL pass-through) — the host never stores or processes audio,
 # so the image stays thin (SC-001/SC-005).
-FROM --platform=linux/amd64 node:24-slim
+# NOTE: --platform is intentionally NOT pinned so native builds work on Apple
+# Silicon (arm64) for local Mac Docker; the retired EC2/Fargate path is gone.
+FROM node:24-slim
 
 # --- Base tooling (minimal; Node 24 already present, no NodeSource step) ---
 # curl/ca-certificates are needed by the opencode installer below.
@@ -26,8 +28,10 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 RUN uv tool install mcp-atlassian
 
 # --- opencode CLI (official installer) ---
+# Pinned to 1.18.11: opencode 1.18.15 regressed `opencode serve`
+# (crash-loops with "ServeError" right after config load); 1.18.11 serve works.
 ENV OPENCODE_INSTALL_DIR=/usr/local/bin
-RUN curl -fsSL https://opencode.ai/install | bash \
+RUN curl -fsSL https://opencode.ai/install | bash -s -- --version 1.18.11 \
     && ln -sf /root/.opencode/bin/opencode /usr/local/bin/opencode \
     && opencode --version
 

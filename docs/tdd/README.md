@@ -28,6 +28,6 @@ in `deploy/discord-agent/test/stub/` and `fixtures/`).
 
 ## Full analysis
 
-See `../log-blueprint.md` for the sibling ops doc. The architectural/narrative
-assessment that produced these plans lives in the design discussion (state
-ownership, dataflow, one-shot event lifecycle, failure mechanics).
+The architectural/narrative assessment that produced these plans lives in the
+design discussion (state ownership, dataflow, one-shot event lifecycle,
+failure mechanics).

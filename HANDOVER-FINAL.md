@@ -289,7 +289,7 @@ Telegram bot · cron/daemon · calendar as task-slot planner / calendar-write au
 ## 14. Sibling references (raw detail only — NOT authoritative)
 
 - **HANDOVER-cursor.md** — richest technical reference: exact JQL for every filter, full label set, dashboards, workflow config, ceremony checklists. Mine it for concrete Jira mechanics.
-- **HANDOVER-claude-sonet.md**, **HANDOVER-gemini.md** — earlier framing; historical context only.
+- **HANDOVER-claude-sonet.md** — earlier framing; historical context only.
 
 Use siblings for Jira specifics. **HANDOVER-FINAL.md wins on every decision and on scope.**
 
