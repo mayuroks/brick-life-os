@@ -1,49 +1,56 @@
-import { spawn } from 'node:child_process';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { log } from '../log.js';
 import { track } from './ops.js';
 
-// Run from the bundled agent dir so opencode loads its opencode.json (model +
-// provider) and AGENTS.md (persona + skills). The persistent opencode serve
-// worker returns empty replies for this model/opencode build (see plan.md), so
-// we drive a fresh `opencode run` per message instead of `--attach`.
-const AGENT_DIR = path.resolve(fileURLToPath(new URL('../../agent', import.meta.url)));
-
-const TIMEOUT_MS = 180000;
-const CHUNK_LIMIT = 2000;
-const CAPTURE_LIMIT = 4000;
-let runCounter = 0;
-
-function shortHex(n = 6) {
-  let s = '';
-  while (s.length < n) s += Math.floor(Math.random() * 16).toString(16);
-  return s;
-}
+const TIMEOUT_MS = 180000;      // keep existing 3-min hard limit
+const CAPTURE_LIMIT = 8000;     // increased capture limit
+let sessionId = null;           // persistent session ID (created lazily)
 
 function bound(text, limit) {
   if (typeof text !== 'string') return '';
-  if (text.length <= limit) return text;
-  return text.slice(-limit);
+  return text.length <= limit ? text : text.slice(-limit);
 }
 
 /**
- * Strip a leading model "Thinking: ..." block if it leaked into the reply, so
- * internal reasoning is never shown to the Discord user. Handles both a single
- * "Thinking: ..." line and a multi-line block that ends at the first blank line.
+ * Create a persistent session on the opencode serve instance.
+ * Called once (lazily on first runAgent call); reused for all subsequent messages.
+ * Session IDs persist for the lifetime of the serve process.
  */
-function stripThinking(text) {
-  if (typeof text !== 'string') return '';
-  let t = text.replace(/^\s*Thinking:.*(?:\r?\n|$)/, '').trimStart();
-  // Defensive: if a longer multi-line thinking block remains (no blank line
-  // after the marker), fall back to trimming leading whitespace only.
-  return t.trim();
+async function getOrCreateSession(serveUrl) {
+  if (sessionId) return sessionId;
+  const password = process.env.OPENCODE_SERVER_PASSWORD || 'opencode-agent';
+  const resp = await fetch(`${serveUrl}/session`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ' + btoa(`opencode:${password}`),
+    },
+    body: JSON.stringify({ title: 'life-os-agent' }),
+  });
+  if (!resp.ok) throw new Error(`Failed to create session: ${resp.status}`);
+  const data = await resp.json();
+  sessionId = data.id; // e.g., "ses_abc123"
+  log('info', 'session.created', { service: 'agent', sessionId });
+  return sessionId;
 }
 
 /**
- * Send a message to the headless agent (`opencode serve`) via
- * `opencode run --attach <serveUrl>` and return its reply (FR-002).
- * Failure (provider/Jira unreachable, timeout) rejects with a friendly message.
+ * Send a message to the headless agent via the opencode serve HTTP API.
+ *
+ * Uses a persistent session — zero per-message startup overhead after the
+ * first call. The serve API is synchronous HTTP/JSON (not SSE streaming):
+ *
+ *   POST  /session/{id}/message
+ *   body: { parts: [{ type: "text", text: "<message>" }] }
+ *   returns: { info: AssistantMessage, parts: Part[] }
+ *
+ * Text content lives in parts[] where type === "text" and .text holds the string.
+ * Reasoning/thinking is a separate part type ("reasoning") and is NOT included
+ * in the text output, so stripThinking() is no longer needed.
+ * Tool calls appear as part.type === "tool" with .tool and .callID fields.
+ * Model/provider errors surface in info.error.
+ *
+ * Timeout uses AbortController (aborts the fetch) plus a fallback POST to
+ * /session/{id}/abort to clean up the server-side session state.
  *
  * @param {string} serveUrl - the headless agent's URL.
  * @param {string} message - the user's message (agent command or query).
@@ -52,156 +59,145 @@ function stripThinking(text) {
  * @param {string} [opts.channelId] - source Discord channel id (passthrough).
  * @returns {Promise<string>} the agent's reply text.
  */
-export function runAgent(serveUrl, message, opts = {}) {
-  return new Promise((resolve, reject) => {
-    const timeoutMs = opts.timeoutMs ?? TIMEOUT_MS;
-    const id = `${Date.now().toString(36)}-${shortHex(4)}-${++runCounter}`;
-    const ctx = { service: 'agent', channelId: opts.channelId, run: id };
-    const t0 = Date.now();
-    const tracker = track();
-    let firstModelSeen = false;
-    let bootMs = -1;
+export async function runAgent(serveUrl, message, opts = {}) {
+  const timeoutMs = opts.timeoutMs ?? TIMEOUT_MS;
+  const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const ctx = { service: 'agent', channelId: opts.channelId, run: id };
+  const t0 = Date.now();
+  const tracker = track();
 
-    // --dir is required: opencode ignores spawn()'s cwd for project/config
-    // discovery (it defaults to the invoking process's dir), so without this it
-    // ran in the wrong dir and fell back to a default model. --dir pins it to
-    // the bundled agent dir that holds opencode.json + AGENTS.md.
-    // --print-logs + --log-level DEBUG + --thinking make the run verbose so a
-    // silent hang is diagnosable in journalctl on the EC2 box (network calls,
-    // model stream, thinking blocks). We log these preconditions at spawn so a
-    // stuck run is distinguishable from a broken one.
-    const env = {
-      ...process.env,
-      // Force debug logging through stderr regardless of TTY.
-      ...(process.env.OPENCODE_LOG_LEVEL ? {} : { OPENCODE_LOG_LEVEL: 'DEBUG' }),
-    };
-    // A fixed non-empty --title is passed so opencode short-circuits its throwaway
-    // auto-title LLM call (ensureTitle only fires on the default "New session - <ISO>"
-    // title). Saves ~20s per message for a Discord bot that never shows session titles.
-    // Must be non-empty: an empty string is treated as "no title" and re-triggers it.
-    const child = spawn(
-      'opencode',
-      ['run', '--dir', AGENT_DIR, '--print-logs', '--log-level', 'DEBUG', '--title', 'life-os-agent', message],
-      {
-        cwd: AGENT_DIR,
-        stdio: ['ignore', 'pipe', 'pipe'],
-        env,
-      },
-    );
-    log('info', 'run.start', ctx, 'Agent run started', {
+  const password = process.env.OPENCODE_SERVER_PASSWORD || 'opencode-agent';
+  const auth = 'Basic ' + btoa(`opencode:${password}`);
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': auth,
+  };
+
+  // 1. Ensure we have a persistent session
+  try {
+    await getOrCreateSession(serveUrl);
+  } catch (e) {
+    log('error', 'run.session-failed', ctx, 'Failed to get/create session', { err: e.message });
+    throw new Error('Agent session unavailable. Try restarting the service.');
+  }
+
+  // 2. AbortController for timeout — aborts the fetch AND hits /abort endpoint
+  const controller = new AbortController();
+  const timer = setTimeout(async () => {
+    controller.abort();
+    try {
+      await fetch(`${serveUrl}/session/${sessionId}/abort`, {
+        method: 'POST',
+        headers,
+      }).catch(() => {});
+      log('warn', 'run.abort', ctx, 'Session aborted due to timeout', { timeoutMs });
+    } catch { /* session may already be gone */ }
+  }, timeoutMs);
+
+  // 3. Send message via API (NOT spawn) — synchronous JSON, single response
+  let out = '';
+  let result;
+  try {
+    log('info', 'run.start', ctx, 'Agent serve call started', {
       timeoutMs,
-      pid: child.pid,
-      opencodeVersion: process.env.OPENCODE_VERSION || 'unknown',
-      providerKey: env.OPENROUTER_API_KEY ? 'set' : 'missing',
-      model: env.AGENT_MODEL || 'openrouter/deepseek/deepseek-v4-flash-0731',
+      sessionId,
+      serveUrl,
+      model: process.env.AGENT_MODEL || 'openrouter/deepseek/deepseek-v4-flash-0731',
     });
-    let out = '';
-    let err = '';
-    const state = { settled: false };
 
-    // Heartbeat: if the agent produces no output for a while, say so loudly
-    // instead of silently waiting out the full timeout.
-    let lastActivity = Date.now();
-    const hbTimer = setInterval(() => {
-      if (state.settled) return;
-      const quietFor = Date.now() - lastActivity;
-      if (quietFor >= 30000) {
-        log('warn', 'run.stall', ctx, 'No agent output for 30s+', {
-          quietMs: quietFor,
-          elapsedMs: Date.now() - t0,
-          outBytes: out.length,
-          errBytes: err.length,
-        });
-      }
-    }, 15000);
-
-    const finish = (fn) => {
-      if (state.settled) return;
-      state.settled = true;
-      clearTimeout(timer);
-      clearInterval(hbTimer);
-      fn();
-    };
-
-    const onData = (stream) => (d) => {
-      lastActivity = Date.now();
-      const chunk = d.toString();
-      if (stream === 'stdout') out += chunk;
-      else err += chunk;
-      out = bound(out, CAPTURE_LIMIT);
-      err = bound(err, CAPTURE_LIMIT);
-      log('info', 'run.chunk', ctx, 'Agent output chunk', {
-        stream,
-        durationMs: Date.now() - t0,
-        text: bound(chunk, CHUNK_LIMIT),
+    // Retry once on 404: serve may have restarted and the cached session ID
+    // is stale. We wipe it, create a fresh session, and retry the message.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const resp = await fetch(`${serveUrl}/session/${sessionId}/message`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          parts: [{ type: 'text', text: message }],
+        }),
+        signal: controller.signal,
       });
-      tracker.add(chunk, ctx);
-      if (!firstModelSeen && /stream providerID=openrouter/.test(chunk)) {
-        firstModelSeen = true;
-        bootMs = Date.now() - t0;
-        log('info', 'run.boot', ctx, 'First model signal reached', { bootMs });
+
+      if (resp.status === 404 && attempt === 0) {
+        log('warn', 'run.session-stale', ctx, 'Session not found (serve restarted?), recreating', {
+          oldSessionId: sessionId,
+        });
+        sessionId = null;
+        await getOrCreateSession(serveUrl);
+        continue;
       }
-    };
-    child.stdout.on('data', onData('stdout'));
-    child.stderr.on('data', onData('stderr'));
 
-    const timer = setTimeout(() => {
-      const fields = {
-        timeoutMs: timeoutMs,
-        bootMs,
-        durationMs: Date.now() - t0,
-        capturedOut: bound(out, CAPTURE_LIMIT),
-        capturedErr: bound(err, CAPTURE_LIMIT),
-        webfetch: tracker.counters(),
-        ops: tracker.summary(),
-      };
-      log('warn', 'run.timeout', ctx, 'Agent run timed out', fields);
-      child.kill('SIGKILL');
-      finish(() =>
-        reject(new Error('The agent took too long. It may be offline or Jira is unreachable — try again.')),
-      );
-    }, timeoutMs);
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => '');
+        throw new Error(`HTTP ${resp.status}: ${bound(body, 500)}`);
+      }
 
-    child.on('error', (e) => {
-      if (state.settled) return;
-      const fields = {
-        reason: e.message,
-        bootMs,
-        durationMs: Date.now() - t0,
-        webfetch: tracker.counters(),
-        ops: tracker.summary(),
-      };
-      log('error', 'run.failed', ctx, 'Agent spawn failed', fields);
-      finish(() => reject(new Error(`Can't reach the agent: ${e.message}`)));
+      result = await resp.json();
+      break;
+    }
+    const info = result.info || {};
+
+    // Check for model/provider errors surfaced by serve
+    if (info.error) {
+      const errMsg = info.error.message || JSON.stringify(info.error);
+      log('error', 'run.model-error', ctx, 'Model returned an error', {
+        error: errMsg,
+        modelID: info.modelID,
+        providerID: info.providerID,
+      });
+      throw new Error(`Model error: ${errMsg}`);
+    }
+
+    // Extract text from parts[].text where part.type === "text"
+    // Reasoning parts (type === "reasoning") are skipped — they are thinking
+    // blocks not intended for the Discord user.
+    // Tool parts (type === "tool") are tracked for ops accounting but not shown.
+    const parts = result.parts || [];
+    for (const part of parts) {
+      if (part.type === 'text' && part.text) {
+        out += part.text;
+        tracker.add(part.text, ctx);
+      }
+      if (part.type === 'tool') {
+        tracker.add(JSON.stringify({ tool: part.tool, callID: part.callID }), ctx);
+      }
+    }
+
+    const durationMs = Date.now() - t0;
+    log('info', 'run.done', ctx, 'Agent run completed', {
+      exitCode: 0,
+      durationMs,
+      outBytes: out.length,
+      webfetch: tracker.counters(),
+      ops: tracker.summary(),
+      sessionId,
+      modelID: info.modelID,
+      providerID: info.providerID,
+      finish: info.finish,
+      cost: info.cost,
+      tokens: info.tokens,
+      outcome: out ? 'success' : 'empty',
     });
 
-    child.on('close', (code) => {
-      if (state.settled) return;
-      const text = stripThinking(out);
-      const errText = err.trim();
-      const fields = {
-        exitCode: code,
-        bootMs,
+    if (out) return out;
+    return '';
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      log('warn', 'run.timeout', ctx, 'Agent run timed out', {
+        timeoutMs,
         durationMs: Date.now() - t0,
         outBytes: out.length,
-        errBytes: err.length,
         webfetch: tracker.counters(),
         ops: tracker.summary(),
-      };
-      if (code === 0 && text) {
-        fields.outcome = 'success';
-        log('info', 'run.done', ctx, 'Agent run completed', fields);
-        return finish(() => resolve(text));
-      }
-      if (code === 0) {
-        fields.outcome = 'empty';
-        log('info', 'run.done', ctx, 'Agent run completed with no output', fields);
-        return finish(() => resolve(''));
-      }
-      fields.outcome = 'failed';
-      fields.reason = bound(errText || 'The agent failed to produce a reply.', CHUNK_LIMIT);
-      log('error', 'run.failed', ctx, 'Agent run failed', fields);
-      finish(() => reject(new Error(errText || 'The agent failed to produce a reply.')));
+      });
+      throw new Error('The agent took too long. It may be offline or Jira is unreachable — try again.');
+    }
+    log('error', 'run.error', ctx, 'Agent call failed', {
+      err: e.message,
+      durationMs: Date.now() - t0,
+      outBytes: out.length,
     });
-  });
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
 }

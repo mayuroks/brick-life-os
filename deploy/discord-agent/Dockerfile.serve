@@ -1,0 +1,60 @@
+# Active Dockerfile for the discord-agent — uses the opencode `serve` mode entrypoint
+# (run.sh invokes `opencode serve` on port 4096 for the agent bridge). This is the
+# live build artifact for local/native deploys; it is NOT the legacy/Fargate path.
+
+# Life OS Agent on Discord — thin deploy image.
+# glibc base (node:24-slim) so the Node bridge + headless opencode agent run.
+# No whisper.cpp / ffmpeg / speech model: voice transcription happens OFF-BOX
+# via Groq STT (URL pass-through) — the host never stores or processes audio,
+# so the image stays thin (SC-001/SC-005).
+# NOTE: --platform is intentionally NOT pinned so native builds work on Apple
+# Silicon (arm64) for local Mac Docker; the retired EC2/Fargate path is gone.
+FROM node:24-slim
+
+# --- Base tooling (minimal; Node 24 already present, no NodeSource step) ---
+# curl/ca-certificates are needed by the opencode installer below and by run.sh's
+# health check (`curl -sf http://127.0.0.1:4096/global/health`).
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends git python3 curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# uv (for the opencode atlassian/Jira MCP via uvx)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Pre-install mcp-atlassian into the uv tool cache at build time so a fresh
+# container does NOT cold-download it on first agent run. Without this, uvx's
+# one-time package fetch (~1-2 min) exceeds opencode's MCP init timeout and the
+# Jira MCP reports "server unavailable" (making Jira unreadable on ECS).
+RUN uv tool install mcp-atlassian
+
+# --- opencode CLI (official installer) ---
+# Pinned to 1.18.11: opencode 1.18.15 regressed `opencode serve`
+# (crash-loops with "ServeError" right after config load); 1.18.11 serve works.
+ENV OPENCODE_INSTALL_DIR=/usr/local/bin
+RUN curl -fsSL https://opencode.ai/install | bash -s -- --version 1.18.11 \
+    && ln -sf /root/.opencode/bin/opencode /usr/local/bin/opencode \
+    && opencode --version
+
+WORKDIR /app
+
+# Install bridge deps (no ffmpeg-static / whisper — transcription is offbox)
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Copy source + bundled 001 agent (skills, persona, config template)
+COPY . .
+
+# run.sh executable
+RUN chmod +x run.sh
+
+ENV NODE_ENV=production
+
+# No whisper model/binary on the host — voice notes are transcribed by Groq STT
+# via the CDN URL (config.js / transcribe/groq.js). GROQ_API_KEY is optional at
+# boot and validated lazily on the first voice note.
+
+# The native/local path maps public :3000 -> container 3000 (Discord bot) and
+# container 4096 (opencode serve) is reached by the bridge.
+EXPOSE 3000
+
+CMD ["./run.sh"]
