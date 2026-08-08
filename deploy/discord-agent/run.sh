@@ -32,7 +32,7 @@ if ! pgrep -f "opencode serve" > /dev/null 2>&1; then
     --log-level WARN > "$HOME/.opencode/serve.log" 2>&1 & echo $! > /tmp/opencode-serve.pid)
   # Wait for health check (up to 10s)
   for i in $(seq 1 20); do
-    if curl -sf "http://127.0.0.1:4096/global/health" > /dev/null 2>&1; then
+    if curl -s --max-time 2 -o /dev/null "http://127.0.0.1:4096/global/health" 2>/dev/null; then
       echo "[boot] opencode serve is healthy (pid=$(cat /tmp/opencode-serve.pid))"
       break
     fi
