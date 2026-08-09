@@ -158,9 +158,11 @@ export async function runAgent(serveUrl, message, opts = {}) {
         tracker.add(part.text, ctx);
       }
       if (part.type === 'tool') {
-        tracker.add(JSON.stringify({ tool: part.tool, callID: part.callID }), ctx);
+        tracker.toolCall(part.tool);
       }
     }
+
+    tracker.setTokens(info.tokens);
 
     const durationMs = Date.now() - t0;
     log('info', 'run.done', ctx, 'Agent run completed', {
@@ -168,6 +170,7 @@ export async function runAgent(serveUrl, message, opts = {}) {
       durationMs,
       outBytes: out.length,
       webfetch: tracker.counters(),
+      tools: tracker.counters().tools,
       ops: tracker.summary(),
       sessionId,
       modelID: info.modelID,
@@ -187,6 +190,7 @@ export async function runAgent(serveUrl, message, opts = {}) {
         durationMs: Date.now() - t0,
         outBytes: out.length,
         webfetch: tracker.counters(),
+        tools: tracker.counters().tools,
         ops: tracker.summary(),
       });
       throw new Error('The agent took too long. It may be offline or Jira is unreachable — try again.');
