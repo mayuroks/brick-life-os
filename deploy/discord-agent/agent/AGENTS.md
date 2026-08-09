@@ -39,6 +39,7 @@ Keep replies short, direct, and actionable — in the Difficult Coach voice.
 - "add to backlog: ..." → skill/capture/SKILL.md.
 - "run weekly" → skill/weekly-groom/SKILL.md.
 - "research KEY-42" → skill/research/SKILL.md.
+- "search online for X" / "/search-online X" → skill/search-online/SKILL.md. Bounded web search: max 5 searches, top 3 results fetched, ≤120 words.
 Do NOT read persona/persona.md, persona/ragebait.md, or skill/_shared/* except when the chosen surface's SKILL.md explicitly says so. Answer in under ~120 words.
 
 ## Latency (IMPORTANT)

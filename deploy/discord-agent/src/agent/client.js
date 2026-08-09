@@ -1,9 +1,8 @@
 import { log } from '../log.js';
 import { track } from './ops.js';
 
-const TIMEOUT_MS = 180000;      // keep existing 3-min hard limit
+const TIMEOUT_MS = 180000;      // 3-min hard limit per message
 const CAPTURE_LIMIT = 8000;     // increased capture limit
-let sessionId = null;           // persistent session ID (created lazily)
 
 function bound(text, limit) {
   if (typeof text !== 'string') return '';
@@ -11,12 +10,10 @@ function bound(text, limit) {
 }
 
 /**
- * Create a persistent session on the opencode serve instance.
- * Called once (lazily on first runAgent call); reused for all subsequent messages.
- * Session IDs persist for the lifetime of the serve process.
+ * Create a fresh session on the opencode serve instance.
+ * Called once per runAgent invocation — no module-level state, no accumulation.
  */
-async function getOrCreateSession(serveUrl) {
-  if (sessionId) return sessionId;
+async function createSession(serveUrl) {
   const password = process.env.OPENCODE_SERVER_PASSWORD || 'opencode-agent';
   const resp = await fetch(`${serveUrl}/session`, {
     method: 'POST',
@@ -28,29 +25,48 @@ async function getOrCreateSession(serveUrl) {
   });
   if (!resp.ok) throw new Error(`Failed to create session: ${resp.status}`);
   const data = await resp.json();
-  sessionId = data.id; // e.g., "ses_abc123"
-  log('info', 'session.created', { service: 'agent', sessionId });
-  return sessionId;
+  log('info', 'session.created', { service: 'agent', sessionId: data.id });
+  return data.id;
+}
+
+/**
+ * Delete a session from the opencode serve instance, freeing the conversation
+ * context and associated server-side memory.
+ *
+ * The serve API uses HTTP DELETE on /session/{id}. Best-effort: never throws.
+ */
+async function deleteSession(serveUrl, id, headers) {
+  if (!id) return;
+  try {
+    await fetch(`${serveUrl}/session/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+    log('info', 'session.deleted', { service: 'agent', sessionId: id }, 'Session deleted');
+  } catch (e) {
+    log('warn', 'session.delete-failed', { service: 'agent', sessionId: id }, `Delete failed: ${e.message}`);
+  }
 }
 
 /**
  * Send a message to the headless agent via the opencode serve HTTP API.
  *
- * Uses a persistent session — zero per-message startup overhead after the
- * first call. The serve API is synchronous HTTP/JSON (not SSE streaming):
+ * One fresh session per call — no context accumulation, no rotation, no retry.
+ * The serve process stays resident (startup tax eliminated by commit 3148382);
+ * only sessions are created per-message, which is a lightweight HTTP POST.
  *
- *   POST  /session/{id}/message
- *   body: { parts: [{ type: "text", text: "<message>" }] }
- *   returns: { info: AssistantMessage, parts: Part[] }
+ * API format (synchronous JSON, not SSE streaming):
+ *   POST  /session                 → { id }
+ *   POST  /session/{id}/message    → { info: AssistantMessage, parts: Part[] }
+ *   DELETE /session/{id}           → true
  *
  * Text content lives in parts[] where type === "text" and .text holds the string.
- * Reasoning/thinking is a separate part type ("reasoning") and is NOT included
- * in the text output, so stripThinking() is no longer needed.
- * Tool calls appear as part.type === "tool" with .tool and .callID fields.
+ * Reasoning parts (type === "reasoning") are skipped.
+ * Tool calls (type === "tool") are tracked for ops accounting.
  * Model/provider errors surface in info.error.
  *
  * Timeout uses AbortController (aborts the fetch) plus a fallback POST to
- * /session/{id}/abort to clean up the server-side session state.
+ * /session/{id}/abort to clean up server-side state.
  *
  * @param {string} serveUrl - the headless agent's URL.
  * @param {string} message - the user's message (agent command or query).
@@ -73,11 +89,12 @@ export async function runAgent(serveUrl, message, opts = {}) {
     'Authorization': auth,
   };
 
-  // 1. Ensure we have a persistent session
+  // 1. Create a fresh session (no reuse, no accumulation)
+  let sessionId;
   try {
-    await getOrCreateSession(serveUrl);
+    sessionId = await createSession(serveUrl);
   } catch (e) {
-    log('error', 'run.session-failed', ctx, 'Failed to get/create session', { err: e.message });
+    log('error', 'run.session-failed', ctx, 'Failed to create session', { err: e.message });
     throw new Error('Agent session unavailable. Try restarting the service.');
   }
 
@@ -94,9 +111,7 @@ export async function runAgent(serveUrl, message, opts = {}) {
     } catch { /* session may already be gone */ }
   }, timeoutMs);
 
-  // 3. Send message via API (NOT spawn) — synchronous JSON, single response
   let out = '';
-  let result;
   try {
     log('info', 'run.start', ctx, 'Agent serve call started', {
       timeoutMs,
@@ -105,35 +120,22 @@ export async function runAgent(serveUrl, message, opts = {}) {
       model: process.env.AGENT_MODEL || 'openrouter/deepseek/deepseek-v4-flash-0731',
     });
 
-    // Retry once on 404: serve may have restarted and the cached session ID
-    // is stale. We wipe it, create a fresh session, and retry the message.
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const resp = await fetch(`${serveUrl}/session/${sessionId}/message`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          parts: [{ type: 'text', text: message }],
-        }),
-        signal: controller.signal,
-      });
+    // 3. Send message
+    const resp = await fetch(`${serveUrl}/session/${sessionId}/message`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        parts: [{ type: 'text', text: message }],
+      }),
+      signal: controller.signal,
+    });
 
-      if (resp.status === 404 && attempt === 0) {
-        log('warn', 'run.session-stale', ctx, 'Session not found (serve restarted?), recreating', {
-          oldSessionId: sessionId,
-        });
-        sessionId = null;
-        await getOrCreateSession(serveUrl);
-        continue;
-      }
-
-      if (!resp.ok) {
-        const body = await resp.text().catch(() => '');
-        throw new Error(`HTTP ${resp.status}: ${bound(body, 500)}`);
-      }
-
-      result = await resp.json();
-      break;
+    if (!resp.ok) {
+      const body = await resp.text().catch(() => '');
+      throw new Error(`HTTP ${resp.status}: ${bound(body, 500)}`);
     }
+
+    const result = await resp.json();
     const info = result.info || {};
 
     // Check for model/provider errors surfaced by serve
@@ -199,9 +201,12 @@ export async function runAgent(serveUrl, message, opts = {}) {
       err: e.message,
       durationMs: Date.now() - t0,
       outBytes: out.length,
+      sessionId,
     });
     throw e;
   } finally {
     clearTimeout(timer);
+    // Always clean up: delete the session so its context memory is freed.
+    await deleteSession(serveUrl, sessionId, headers).catch(() => {});
   }
 }
