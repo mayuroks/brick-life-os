@@ -71,9 +71,11 @@ def jira(jql: str, limit: int = 15) -> str:
     )
 
 
-def jirachart(jql: str, chart_type: str = "column", stat_type: str = "statuses",
+def jirachart(jql: str, chart_type: str = "pie", stat_type: str = "issuetype",
               width: int = 0) -> str:
-    """LIVE Jira chart. chartType: pie|column|bar. statType: statuses|assignees|issuetype..."""
+    """LIVE Jira chart. chartType: pie|column|bar. statType: statuses|assignees|issuetype...
+    NOTE: only 'pie' is supported in this Confluence Cloud instance —
+    chartType=column/bar renders "The chart is not supported." (verified 2026-08-10)."""
     w = f'<ac:parameter ac:name="width">{width}</ac:parameter>' if width else ""
     return (
         f'<ac:structured-macro ac:name="jirachart" ac:schema-version="1">'
@@ -120,7 +122,7 @@ def build_body(counts: dict) -> str:
             jql += " AND updated >= startOfWeek()"
         n = bs.get(stat_key, 0)
         body = (f'<p><strong>{emoji} {label}: {n}</strong></p>'
-                f"{jirachart(jql, 'column', 'statuses')}")
+                f"{jirachart(jql, 'pie', 'issuetype')}")
         cells.append(panel(color, body))
     # grid via 3-column layout (Confluence ac:layout, 3 cells per row)
     grid = "<ac:layout>" + "".join(col(c) for c in cells) + "</ac:layout>"
