@@ -107,7 +107,7 @@ def build_body(counts: dict) -> str:
     blocks = []
 
     # --- Header ---
-    blocks.append("<h1>Mission Control v2 🔥🔥</h1>")
+    blocks.append("<h1>&nbsp;</h1>")
     blocks.append(f"<p>Jira workflow across all Life OS domains — live charts + macros. "
                   f"{counts.get('total_open', 0)} open issues. "
                   f"Updated {os.environ.get('BUILD_DATE', 'on publish')}.</p>")
@@ -126,10 +126,7 @@ def build_body(counts: dict) -> str:
                   f'<tbody><tr>{tds}</tr></tbody>'
                   '</table>')
 
-    # --- Status Distribution (live pie) ---
-    blocks.append("<h2>🧁 Status Distribution (live)</h2>")
-    blocks.append(jirachart(
-        f'project in ({PROJECTS}) AND statusCategory != Done', "pie", "statuses"))
+    # --- Status Distribution removed (2026-08-11): ugly pie not wanted ---
 
     # --- Two-column: Ready to Pick | Blocked ---
     left = ("<h3>🔴 Ready to Pick Up</h3>"
