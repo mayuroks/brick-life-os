@@ -23,7 +23,7 @@ defaults to `Ideas` rather than erroring.
 
 ## Workflow (exact order)
 
-`Backlog → Ready → Todo-Week → In Progress → Waiting → Follow-up → Done`
+`Backlog → Ready → Todo-Week → In Progress → Waiting → Done`
 
 ## Saved Filters
 

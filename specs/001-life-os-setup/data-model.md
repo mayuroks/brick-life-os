@@ -37,7 +37,7 @@ dependent workstreams.
 - **Identity/Uniqueness**: unique `key` assigned by Jira; one commitment =
   one issue.
 - **Workflow / lifecycle states**:
-  `Backlog → Ready → Todo-Week → In Progress → Waiting → Follow-up → Done`
+  `Backlog → Ready → Todo-Week → In Progress → Waiting → Done`
   - Any status may sit "long-stuck" if unchanged ≥28 days.
 
 ### Metric Record (streak / plan-deliver / tier)

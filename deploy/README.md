@@ -2,7 +2,7 @@
 
 > **This is the single, authoritative statement of how the Life OS agent is
 > deployed. All AWS deploy truth lives here.** Files elsewhere that claim
-> Fargate / Render / App Runner / `us-east-1` / SSM Parameter Store / ECR /
+> Fargate / Render / App Runner / SSM Parameter Store / ECR /
 > whisper / `DISABLE_VOICE` / CloudWatch `/ecs/` are **LEGACY** unless marked
 > `[LEGACY/ARCHIVED]` right here or in `specs/`/`openspec/` history.
 
@@ -52,7 +52,7 @@ bash scripts/aws-stale-check.sh
 ## What to NEVER do
 
 - Do **not** run any ECS/Fargate/ECR/App Runner/Render provisioning — billable and legacy.
-- Do **not** reference `us-east-1`, SSM Parameter Store, ECR, CloudWatch `/ecs/`,
+- Do **not** reference SSM Parameter Store, ECR, CloudWatch `/ecs/`,
   whisper, or `DISABLE_VOICE` as current — every one is legacy.
 - The old `task-def.json` / `render.yaml` Fargate/Render artifacts have been
   removed. Do **not** edit `deploy/discord-agent/Dockerfile` — it is a

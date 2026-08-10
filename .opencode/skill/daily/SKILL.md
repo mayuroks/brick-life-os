@@ -114,7 +114,7 @@ Suggest **exactly one** thing to do now:
 - `recap` → where the week stands vs plan (Todo-Week vs Done-this-week);
   call out drift.
 - `stuck` → show the Long-stuck list (saved filter: `status in (Ready,
-  Todo-Week, Waiting) AND updated <= -28d`). Surface, never hide.
+  Todo-Week, "Blocked Or FollowUp") AND updated <= -28d`). Surface, never hide.
 - `research KEY-42` → hand off to the research skill (toggle
   `needs-research` → `research-done`).
 - `rage <line>` → append a one-liner to `persona/ragebait.md`, optionally

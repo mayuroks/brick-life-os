@@ -36,7 +36,7 @@ Create one canonical **Life OS workflow** and assign it to all 9 projects via a
 single shared workflow scheme. Status order is strict:
 
 ```
-Backlog → Ready → Todo-Week → In Progress → Waiting → Follow-up → Done
+Backlog → Ready → Todo-Week → In Progress → Waiting → Done
 ```
 
 Transitions (exact edges; no skipping required by the contract, but the scheme
@@ -47,16 +47,16 @@ Backlog → Ready
 Ready → Todo-Week
 Todo-Week → In Progress
 In Progress → Waiting
-Waiting → Follow-up
-Follow-up → Done
+Waiting → Done
 ```
+
 Plus the friction-respecting moves used by skills (never delete/re-hide):
 - `Todo-Week → Waiting` (friction re-slot / hold visible)
 - `Todo-Week → Ready` (re-slot back)
 - `Waiting → Done`
 
 Mapping to Jira status categories: `Backlog`/`Ready`/`Todo-Week`/`Waiting`
-= To Do; `In Progress`/`Follow-up` = In Progress; `Done` = Done.
+= To Do; `In Progress` = In Progress; `Done` = Done.
 
 ## 2. Labels (T007)
 
@@ -99,9 +99,9 @@ Create 5 shared saved filters. JQL:
 | Filter | JQL |
 |--------|-----|
 | Pipeline | `resolution = Unresolved ORDER BY created ASC` |
-| Backlog | `resolution = Unresolved AND status in (Backlog, Ready, Todo-Week, "In Progress", Waiting, "Follow-up") ORDER BY rank ASC` |
+| Backlog | `resolution = Unresolved AND status in (Backlog, Ready, Todo-Week, "In Progress", "Blocked Or FollowUp") ORDER BY rank ASC` |
 | Todo-Week | `resolution = Unresolved AND status = "Todo-Week" ORDER BY rank ASC` |
-| Long-stuck | `status in (Ready, "Todo-Week", Waiting) AND updated <= -28d ORDER BY updated ASC` |
+| Long-stuck | `status in (Ready, "Todo-Week", "Blocked Or FollowUp") AND updated <= -28d ORDER BY updated ASC` |
 | Done-this-week | `status changed to Done during (startOfWeek(), now()) ORDER BY resolved DESC` |
 
 (Adjust `startOfWeek()`/`startOfDay()` to local tz as needed; the semantics —

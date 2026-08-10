@@ -215,7 +215,7 @@ consistent everywhere — delivering a coherent interface persona standalone.
 - **FR-002**: System MUST support 9 projects: Career, Family, House, Finance,
   Network, Health/Diet, LifeOS, Docs, Ideas.
 - **FR-003**: System MUST model the workflow: Backlog → Ready → Todo-Week →
-  In Progress → Waiting → Follow-up → Done.
+  In Progress → Waiting → Done.
 - **FR-004**: System MUST support labels: constraints (`loc/time/person`),
   `week:YYYY-Www`, `needs-research`/`research-done`, `routine:*`, `internal`,
   and auto-flagged `long-stuck` (unchanged ≥28 days).

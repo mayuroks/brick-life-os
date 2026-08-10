@@ -189,10 +189,11 @@ async function handleVoice(message, cfg, state) {
  * Reads plain channel messages and sends them to the headless agent; posts the
  * agent's reply back to the same channel.
  *
- * @param {{token:string, serveUrl:string}} cfg
+ * @param {{token:string, serveUrl:string, myBotId:string, allowedBotIds?:string[]}} cfg
  * @param {{agentUp:boolean, bridgeUp:boolean}} state
  */
 export function createBridge(cfg, state) {
+  const { myBotId, allowedBotIds = [] } = cfg;
   const client = new Client({
     intents: [
       GatewayIntentBits.Guilds,
@@ -204,12 +205,15 @@ export function createBridge(cfg, state) {
 
   client.once('ready', () => {
     state.bridgeUp = true;
-    log('info', 'bridge.ready', { service: 'bridge', user: client.user?.tag }, 'Bridge ready');
+    const myBotId = client.user?.id;
+    log('info', 'bridge.ready', { service: 'bridge', user: client.user?.tag, userId: myBotId }, 'Bridge ready');
   });
 
   client.on('messageCreate', (message) => {
-    // Ignore the bot's own messages and other bots (no reply loops).
-    if (message.author.bot) return;
+    // Ignore the bot's own messages (prevent reply loops).
+    if (myBotId && message.author.id === myBotId) return;
+    // Ignore other bots not in whitelist (allow Message Scheduler, etc.).
+    if (message.author.bot && !allowedBotIds.includes(message.author.id)) return;
 
     const text = (message.content || '').trim();
     const isVoice = !text && isVoiceMessage(message);

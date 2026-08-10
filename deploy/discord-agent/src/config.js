@@ -5,7 +5,7 @@ import 'dotenv/config';
  * Fails fast at boot if required secrets are missing (FR-007).
  * No secret is hardcoded; all values come from env (FR-007).
  *
- * @returns {{token:string, jiraUrl:string, jiraUsername:string, jiraToken:string, serveUrl:string, port:number}}
+ * @returns {{token:string, jiraUrl:string, jiraUsername:string, jiraToken:string, serveUrl:string, port:number, groqApiKey:string, groqTranscribeUrl:string, groqModel:string, myBotId:string, allowedBotIds:string[]}}
  * @throws {Error} with the exact next steps when required secrets are missing.
  */
 export function loadConfig(env = process.env) {
@@ -16,7 +16,7 @@ export function loadConfig(env = process.env) {
   if (!env.JIRA_API_TOKEN) missing.push('JIRA_API_TOKEN');
   const hasProvider =
     env.ANTHROPIC_API_KEY || env.OPENROUTER_API_KEY || env.OPENAI_API_KEY;
-  if (!hasProvider) missing.push('an LLM provider key (ANTHROPIC_API_KEY / OPENROUTER_API_KEY)');
+  if (!hasProvider) missing.push('an LLM provider key (ANTHROPIC_API_KEY / OPENROUTER_API_KEY / OPENROUTER_API_KEY)');
 
   if (missing.length) {
     throw new Error(
@@ -31,6 +31,12 @@ export function loadConfig(env = process.env) {
     );
   }
 
+  const myBotId = env.MY_BOT_ID || '';
+  const allowedBotIds = (env.ALLOWED_BOT_IDS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   return {
     token: env.DISCORD_BOT_TOKEN,
     jiraUrl: env.JIRA_URL,
@@ -41,6 +47,8 @@ export function loadConfig(env = process.env) {
     groqApiKey: env.GROQ_API_KEY || '',
     groqTranscribeUrl: GROQ_TRANSCRIBE_URL,
     groqModel: GROQ_TRANSCRIBE_MODEL,
+    myBotId,
+    allowedBotIds,
   };
 }
 

@@ -69,9 +69,9 @@ Groom the backlog so the week starts clean and prioritized:
    **Backlog** (someday / blocked / low priority). Justify tersely in persona
    voice — do not dump a wall of rationale.
 4. Flag anything unchanged ≥28 days with `long-stuck` (auto-flag rule; use the
-   Long-stuck saved filter and its JQL — `status in (Ready, Todo-Week, Waiting)
-   AND updated <= -28d`). Long-stuck items surface in the scoreboard; they are
-   **not** hidden.
+    Long-stuck saved filter and its JQL — `status in (Ready, Todo-Week, "Blocked Or FollowUp")
+    AND updated <= -28d`). Long-stuck items surface in the scoreboard; they are
+    **not** hidden.
 
 **Groom output**: a Ready list — the pool from which the week is picked.
 

@@ -159,7 +159,7 @@ hopeless < average < good < elite < god-mode
 
 ## 5. Terminology
 
-- **Backlog / Ready / Todo-Week / In Progress / Waiting / Follow-up / Done** — pipeline.
+- **Backlog / Ready / Todo-Week / In Progress / Waiting / Done** — pipeline.
 - **Fear-trigger** — calendar event injecting a consequence before execution (§3).
 - **Antivisible commitment** — an internal stake you've made into a real Jira issue (the fix for your hiding-self-goals problem).
 - **Assess / grill** — agent judges a task: urgency, cost-benefit, elevation, routine-vs-once (§7).
@@ -173,13 +173,13 @@ hopeless < average < good < elite < god-mode
 
 **Projects (9):** Career, Family, House, Finance, Network, Health/Diet, LifeOS, Docs, Ideas.
 
-**Workflow:** `Backlog → Ready → Todo-Week → In Progress → Waiting → Follow-up → Done`
+**Workflow:** `Backlog → Ready → Todo-Week → In Progress → Waiting → Done`
 
 **Labels:** constraints `loc/time/person` · `week:YYYY-Www` · `needs-research`/`research-done` · `routine:*` · `internal` (antivisible self-commitment) · `long-stuck` (auto-flagged)
 
 **Low-effort dashboard (v1) — Filter Results gadgets, 15-min refresh:**
 1. **Pipeline** — all open (primary)
-2. **Long-stuck** — `status in (Ready, "Todo-Week", Waiting) AND updated <= -28d` — the months-forgotten list you keep losing track of
+2. **Long-stuck** — `status in (Ready, "Todo-Week", "Blocked Or FollowUp") AND updated <= -28d` — the months-forgotten list you keep losing track of
 3. **Todo-Week** — this week's picks
 4. **Streak / plan-deliver slip** — a small text/stat gadget (agent updates weekly) with your two percentages + current streaks
 
