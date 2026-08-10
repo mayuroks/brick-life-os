@@ -112,21 +112,19 @@ def build_body(counts: dict) -> str:
                   f"{counts.get('total_open', 0)} open issues. "
                   f"Updated {os.environ.get('BUILD_DATE', 'on publish')}.</p>")
 
-    # --- Quick Stats: colored panels + a live chart per status ---
+    # --- Quick Stats: one horizontal row (table), counts only, no charts ---
     blocks.append("<h2>📊 Quick Stats</h2>")
-    cells = []
-    for label, color, emoji in STATUS_OUT:
-        stat_key = label.split(" ·")[0]
-        jql = f'project in ({PROJECTS}) AND status = "{stat_key}"'
-        if "this week" in label:
-            jql += " AND updated >= startOfWeek()"
-        n = bs.get(stat_key, 0)
-        body = (f'<p><strong>{emoji} {label}: {n}</strong></p>'
-                f"{jirachart(jql, 'pie', 'issuetype')}")
-        cells.append(panel(color, body))
-    # grid via 3-column layout (Confluence ac:layout, 3 cells per row)
-    grid = "<ac:layout>" + "".join(col(c) for c in cells) + "</ac:layout>"
-    blocks.append(grid)
+    ths = "".join(f'<th style="text-align:center;">{emoji} {label}</th>'
+                  for label, _, emoji in STATUS_OUT)
+    tds = "".join(f'<td style="text-align:center;"><p style="font-size:1.6em;"><strong>{bs.get(label.split(" ·")[0], 0)}</strong></p></td>'
+                  for label, _, _ in STATUS_OUT)
+    blocks.append('<table>'
+                  '<colgroup>'
+                  + "".join('<col style="width:16.6%;" />' for _ in STATUS_OUT)
+                  + '</colgroup>'
+                  f'<thead><tr>{ths}</tr></thead>'
+                  f'<tbody><tr>{tds}</tr></tbody>'
+                  '</table>')
 
     # --- Status Distribution (live pie) ---
     blocks.append("<h2>🧁 Status Distribution (live)</h2>")
