@@ -26,7 +26,7 @@
       ],
       "key_overrides": {
         "Career": "BF",
-        "Family": "AT",
+        "Family": "FAM",
         "House": "HM",
         "Finance": "FIN",
         "Network": "BR",
@@ -46,7 +46,6 @@
       "Todo-Week",
       "In Progress",
       "Waiting",
-      "Follow-up",
       "Done"
     ],
     "labels": [

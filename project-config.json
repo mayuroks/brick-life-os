@@ -26,7 +26,7 @@
       ],
       "key_overrides": {
         "Career": "BF",
-        "Family": "AT",
+        "Family": "FAM",
         "House": "HM",
         "Finance": "FIN",
         "Network": "BR",
@@ -40,13 +40,12 @@
     "projects": {
       "note": "Pre-resolved : project keys live in project_discovery.key_overrides (stamped 2026-08-02). Not re-derived at run time."
     },
-    "workflow": [
+"workflow": [
       "Backlog",
       "Ready",
       "Todo-Week",
       "In Progress",
       "Waiting",
-      "Follow-up",
       "Done"
     ],
     "labels": [
