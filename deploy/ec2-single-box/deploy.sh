@@ -16,6 +16,7 @@ BOX_DIR="$ROOT/deploy/ec2-single-box"
 BOX_IP="${BOX_IP:-15.252.6.196}"
 PEM="$BOX_DIR/lifeos-box.pem"
 APP_SRC="$ROOT/deploy/discord-agent"
+SKILL_SRC="$ROOT/.opencode/skill"   # single source of truth for agent skills
 REMOTE_APP="/home/ubuntu/discord-agent"
 
 SSH=(ssh -i "$PEM" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
@@ -32,13 +33,17 @@ rsync -az --delete -e "ssh -i $PEM -o StrictHostKeyChecking=accept-new" \
   --exclude '.dockerignore' --exclude 'test' --exclude 'fixtures' \
   "$APP_SRC/" ubuntu@"$BOX_IP":"$REMOTE_APP/"
 
-echo "==> [2/4] push .env (secrets) via stdin (not argv), chmod 600"
+echo "==> [2/4] sync canonical skills (.opencode/skill) -> agent/skill (single source of truth)"
+rsync -az --delete -e "ssh -i $PEM -o StrictHostKeyChecking=accept-new" \
+  "$SKILL_SRC/" ubuntu@"$BOX_IP":"$REMOTE_APP/agent/skill/"
+
+echo "==> [3/5] push .env (secrets) via stdin (not argv), chmod 600"
 cat "$APP_SRC/.env" | "${SSH[@]}" ubuntu@"$BOX_IP" \
   "cat > $REMOTE_APP/.env && chmod 600 $REMOTE_APP/.env && wc -l $REMOTE_APP/.env"
 
-echo "==> [3/4] push + run remote setup (installs deps, renders config, installs systemd unit)"
+echo "==> [4/5] push + run remote setup (installs deps, renders config, installs systemd unit)"
 "${SCP[@]}" "$BOX_DIR/setup-app-remote.sh" ubuntu@"$BOX_IP":"/tmp/setup-app-remote.sh"
 "${SSH[@]}" ubuntu@"$BOX_IP" "bash /tmp/setup-app-remote.sh 2>&1"
 
-echo "==> [4/4] done. Service enabled; verify:"
+echo "==> [5/5] done. Service enabled; verify:"
 echo "   ssh -i $PEM ubuntu@$BOX_IP 'systemctl status discord-agent --no-pager; swapon --show; curl -s localhost:3000/health'"

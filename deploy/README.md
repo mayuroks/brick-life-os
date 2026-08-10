@@ -31,6 +31,15 @@ All run from the repo root and live in `deploy/ec2-single-box/`:
 - `deploy.sh:16` and `update-secrets.sh:14` both default `BOX_IP=15.252.6.196` (the live box).
 - `provision.sh:24` `SSH_SOURCE=122.171.22.59/32` is the **SSH source CIDR**, not the box IP.
 
+## Single source of truth: agent skills
+
+Agent skills (`capture`, `daily`, `weekly-groom`, `research`, `search-online`,
+`_shared`) live **only** in the repo-root `.opencode/skill/`. There is **no**
+copy under `deploy/discord-agent/agent/skill/`. `deploy.sh` step [2/5] rsyncs
+`.opencode/skill/` → `agent/skill/` on the box at deploy time, so the box
+always runs the same skills the local dev agent does. Edit skills in
+`.opencode/skill/`; deploy pushes them.
+
 ## Verify on the box
 
 ```sh
