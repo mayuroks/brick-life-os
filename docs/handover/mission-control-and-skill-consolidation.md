@@ -82,12 +82,38 @@ Status: **DONE (2026-08-10).**
   `/rest/api/3/search` endpoint; use `/search/jql`). Counts 2026-08-10:
   133 total, 20 Backlog, 6 Ready, 5 In-Progress, 6 Done this week.
 
+## MISSION CONTROL v2 (2026-08-10) — HTML-mockup-style native layout
+
+Built a NEW page (does NOT touch v1 page 98311, still v6):
+**id `66161`** — "Mission Control v2 🔥🔥", child of v1. View:
+`https://mayurzenith.atlassian.net/wiki/spaces/~/66161`
+
+Layout follows `.lavish/mission-control-dashboard.html` using Confluence-native
+building blocks (Confluence CANNOT render Tailwind cards/grids):
+
+- **📊 Quick Stats** — colored panels grid (note/tip/info/warning/success), one per
+  status, each with a **live `jirachart` column** (count). Confirmed the chart macro
+  is `ac:name="jirachart"` (NOT `jira-chart`) with params `chartType`, `statType=statuses`,
+  `jql`, `server`, `serverId` — `jira-chart` + `statField` render unknown-macro.
+- **🧁 Status Distribution** — live `jirachart` pie by status.
+- **🔴/⛔ two-column** — Ready-to-Pick | Blocked/Waiting via `ac:layout` cells + live
+  `jira` macros.
+- **📅 Weekly Delivery Snapshot** — static counts (Done-this-week, Todo-Week).
+- **🏢 By Domain** — static matrix table (9 domains × 6 statuses), counts at publish.
+- **🗂️ Open by Domain** — per-domain live `jira` macro lists.
+- **🔥 Long-Stuck** — live `jira` macro.
+
+Builder: `scripts/confluence-mission-control-v2.py` (reproducible).
+Run `JIRA_API_TOKEN=... python3 scripts/confluence-mission-control-v2.py` to
+re-publish (live-counts the static tables each run; no page id = creates fresh —
+pass `--page 66161` to update in place). `--dry-run` previews body.
+
+Stat counts in the static tables snapshot at publish; all charts/lists are live
+Jira data. User selected: colored panels for Quick Stats + live-chart counts +
+full layout in one pass.
+
 ## Open items
 
 - Local `.opencode/skill/` and the box now share one set. Confirm the
   `research` skill's fetch-budget language is coherent with `search-online`
   (both exist; box runs both).
-- The Confluence builder now lives in `scripts/` (`confluence-mission-control.py`)
-  and is reproducible; consider wiring it into a weekly re-publish cron if the
-  page's static count text ever needs refreshing (Jira macros are already live,
-  so re-publishing is only needed to change layout/macros).
