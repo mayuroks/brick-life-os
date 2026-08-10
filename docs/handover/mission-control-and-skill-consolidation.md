@@ -67,12 +67,27 @@ Goal: publish the mission-control content as a **Confluence page** with live
   confirm live render, then build the full page with embedded `jira` macros per
   status/domain via Storage-Format POST to page `98311`.
 
-Status: **not started** (deferred to the session that picks this up).
+Status: **DONE (2026-08-10).**
+- Verified the macro Storage Format against a throwaway page: Confluence Cloud's
+  Jira macro needs `server=System Jira` + `serverId=1c979962-873c-3fbb-ad9e-7066ed9bed18`
+  (the org's app link; wrong refs → "Unable to locate Jira server").
+- Published to page `98311` "Mission Control 🔥🔥" (version 6) with 15 embedded
+  `jira` macros: Blocked/Waiting, Done-this-week, Ready-to-Pick, In-Progress,
+  Todo-Week, one per domain (×9), Long-Stuck. All resolve (0 `jim-error`,
+  0 "Unable to locate"); rows hydrate client-side on view.
+- Reproducible builder: `scripts/confluence-mission-control.py` (reads
+  `JIRA_API_TOKEN` env; `--dry-run` previews; bumps page version). Run anytime:
+  `JIRA_API_TOKEN=... python3 scripts/confluence-mission-control.py`.
+- Live data exists (old script's "zero issues" was the removed
+  `/rest/api/3/search` endpoint; use `/search/jql`). Counts 2026-08-10:
+  133 total, 20 Backlog, 6 Ready, 5 In-Progress, 6 Done this week.
 
 ## Open items
 
 - Local `.opencode/skill/` and the box now share one set. Confirm the
   `research` skill's fetch-budget language is coherent with `search-online`
   (both exist; box runs both).
-- Decide whether the Confluence build should live as a script under `scripts/`
-  (e.g. `scripts/confluence-publish.sh`) to make it reproducible.
+- The Confluence builder now lives in `scripts/` (`confluence-mission-control.py`)
+  and is reproducible; consider wiring it into a weekly re-publish cron if the
+  page's static count text ever needs refreshing (Jira macros are already live,
+  so re-publishing is only needed to change layout/macros).
