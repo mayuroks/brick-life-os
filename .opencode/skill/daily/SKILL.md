@@ -58,6 +58,12 @@ in Jira at read time — it is never written to any calendar event** (calendar
    context); name the ones with stakes.
 5. **Weak-stat callout** — the stat most at risk today (delivery, a practice
    streak, plan adherence) — say it plainly.
+6. **(When relevant)** Epic/timeline context — if an Epic's start/end date
+   affects today or this week, name it from Jira (Epic start/due fields). The
+   user has a Life Map dashboard mapping Projects→Epics→timelines at
+   `https://brick-life-os-3.onrender.com` (see AGENTS.md "Dashboard awareness"),
+   but Jira remains the source of truth — do not fetch the dashboard unless
+   asked.
 
 ## `what next` — assess + ONE suggestion (T029)
 
