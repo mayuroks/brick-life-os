@@ -1,0 +1,29 @@
+# Render Blueprint — Life Map Dashboard hosting (Feature 013)
+#
+# Owned by 013 (Render Dashboard Hosting). Deploys the Feature 1 app in
+# life-map-dashboard/ (owned by 012). This file contains ONLY the hosting
+# wiring; it does not (re-)define the app, its routes, or its Jira env
+# contract (all owned by 012).
+#
+# Secrets (FR-003/FR-008/SC-003): JIRA_URL / JIRA_USERNAME / JIRA_API_TOKEN
+# are declared here with `sync: false` so their real values live ONLY in the
+# Render service settings — never in this committed blueprint or any served
+# page. To rotate a credential, update the Render env var; no code change or
+# new commit required (FR-004/SC-004).
+services:
+  - type: web
+    name: life-map-dashboard
+    runtime: node
+    rootDir: life-map-dashboard
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      # Values set in Render dashboard (sync: false = not sourced from repo).
+      - key: JIRA_URL
+        sync: false
+      - key: JIRA_USERNAME
+        sync: false
+      - key: JIRA_API_TOKEN
+        sync: false
