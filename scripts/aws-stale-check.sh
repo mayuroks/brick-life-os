@@ -23,6 +23,12 @@ EXEMPT_DIRS='specs/ openspec/ deprecated/ node_modules/ .aws-cli-v2/ .git/ .lavi
 # so future agents can recognize them, so it is exempt.
 TRUTH_FILE='deploy/README.md'
 
+# CURRENT Render dashboard hosting deploy (feature 013): these root-level files
+# are the live Render free-tier deploy for life-map-dashboard/. They are NOT
+# stale/legacy AWS markers — exempt them so the gate doesn't misfire on the
+# legitimate Render deployment. The AWS/EC2 discord-agent deploy is separate.
+RENDER_DEPLOY_FILES='render.yaml Dockerfile .dockerignore'
+
 # Token-precise markers. Pattern avoids false positives: \bECR\b does not match
 # "secret"; "Render" the verb (render agent/opencode.json) is not matched, only
 # Render the retired host. /ecs/ is the CloudWatch log-group path used only by
@@ -49,6 +55,11 @@ while IFS= read -r -d '' f; do
   [ "$skip" = 1 ] && continue
   # Skip the truth file
   [ "$rel" = "$TRUTH_FILE" ] && continue
+  # Skip the current Render dashboard deploy files (feature 013)
+  for r in $RENDER_DEPLOY_FILES; do
+    [ "$rel" = "$r" ] && skip=1 && break
+  done
+  [ "$skip" = 1 ] && continue
   # Skip files carrying an explicit legacy-archive banner
   if rg -q '\[LEGACY/ARCHIVED\]' "$f"; then
     continue
