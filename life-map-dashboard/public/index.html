@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Map: Paths & Timelines</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        page: 'rgb(var(--page) / <alpha-value>)',
+                        card: 'rgb(var(--card) / <alpha-value>)',
+                        panel: 'rgb(var(--panel) / <alpha-value>)',
+                        line: 'rgb(var(--line) / <alpha-value>)',
+                        line2: 'rgb(var(--line2) / <alpha-value>)',
+                        soft: 'rgb(var(--soft) / <alpha-value>)',
+                        soft2: 'rgb(var(--soft2) / <alpha-value>)',
+                        t1: 'rgb(var(--t1) / <alpha-value>)',
+                        t2: 'rgb(var(--t2) / <alpha-value>)',
+                        t3: 'rgb(var(--t3) / <alpha-value>)',
+                        barA: 'rgb(var(--bar-a) / <alpha-value>)',
+                        barB: 'rgb(var(--bar-b) / <alpha-value>)',
+                        barTxt: 'rgb(var(--bar-txt) / <alpha-value>)',
+                        barChip: 'rgb(var(--bar-chip) / <alpha-value>)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light theme — inspired by #b2a3d8 (lavender) + #cee8e1 (mint) */
+            --page: 206 232 225;
+            --card: 248 252 250;
+            --panel: 235 244 240;
+            --line: 176 205 198;
+            --line2: 133 168 160;
+            --soft: 214 232 226;
+            --soft2: 196 219 212;
+            --t1: 27 52 48;
+            --t2: 74 104 99;
+            --t3: 91 121 115;
+            --bar-a: 178 163 216;
+            --bar-b: 147 128 201;
+            --bar-txt: 34 28 66;
+            --bar-chip: 246 243 252;
+        }
+        .dark {
+            /* Dark theme — original deep-navy */
+            --page: 11 15 25;
+            --card: 19 27 46;
+            --panel: 11 15 25;
+            --line: 30 41 59;
+            --line2: 71 85 105;
+            --soft: 30 41 59;
+            --soft2: 51 65 85;
+            --t1: 255 255 255;
+            --t2: 148 163 184;
+            --t3: 120 130 150;
+            --bar-a: 16 185 129;
+            --bar-b: 59 130 246;
+            --bar-txt: 255 255 255;
+            --bar-chip: 0 0 0;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: rgb(var(--page)); }
+        ::-webkit-scrollbar-thumb { background: rgb(var(--line)); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgb(var(--line2)); }
+    </style>
+</head>
+<body class="bg-page text-t1 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <header class="border-b border-line bg-card/85 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-barA to-barB flex items-center justify-center shadow-lg shadow-barA/30">
+                <i class="fa-solid fa-compass text-barTxt text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base md:text-lg tracking-tight bg-gradient-to-r from-barA via-barB to-barA bg-clip-text text-transparent">Life Map - Paths & Timelines 🔥</h1>
+                <p class="text-xs text-t2">Projects, Epics, Timelines. Choose paths 👉, reach you end goals ⛳, achieve trophies 🏆 🎖 🚀</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Timeline View Mode Toggle -->
+            <div class="bg-page border border-line p-1 rounded-xl flex items-center gap-1 text-xs">
+                <button onclick="setTimelineMode('weekly')" id="mode-weekly-btn" class="px-3 py-1.5 rounded-lg font-semibold bg-emerald-600 text-white transition">Weekly View (24 Wks)</button>
+                <button onclick="setTimelineMode('monthly')" id="mode-monthly-btn" class="px-3 py-1.5 rounded-lg font-medium text-t2 hover:text-t1 transition">Monthly View</button>
+            </div>
+            <!-- Refresh Data -->
+            <button onclick="refreshData()" id="refresh-btn" class="px-3 py-2 rounded-xl bg-page border border-line hover:border-line2 text-t2 hover:text-t1 text-xs font-semibold flex items-center gap-2 transition" title="Refresh Jira data">
+                <i id="refresh-icon" class="fa-solid fa-rotate text-sm"></i> <span class="hidden md:inline">Refresh</span>
+            </button>
+            <!-- Light / Dark Theme Toggle -->
+            <button onclick="toggleTheme()" id="theme-toggle" class="w-10 h-10 rounded-xl bg-page border border-line hover:border-line2 flex items-center justify-center text-t2 hover:text-t1 transition" title="Toggle Light / Dark Theme">
+                <i id="theme-icon" class="fa-solid fa-moon text-base"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 p-6 relative overflow-auto">
+        <div class="bg-card border border-line rounded-3xl p-6 md:p-8 shadow-2xl h-[calc(100vh-7rem)] overflow-hidden flex flex-col relative">
+            <!-- Workspace Container -->
+            <div id="workspace-container" class="relative w-full flex-1 flex flex-col gap-4 overflow-auto pb-4">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </div>
+    </main>
+
+    <div id="epic-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-card border border-line rounded-3xl max-w-xl w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <button onclick="closeEpicModal()" class="absolute top-5 right-5 text-t2 hover:text-t1 transition w-8 h-8 rounded-full bg-page flex items-center justify-center border border-line">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div id="modal-project-badge" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Project</div>
+                <span id="modal-epic-dates" class="text-xs text-t2 font-medium">Horizon Vector</span>
+            </div>
+
+            <h3 id="modal-epic-title" class="text-xl font-bold text-t1 mb-2">Epic Title</h3>
+            <p id="modal-epic-desc" class="text-xs text-t2 mb-6">Epic objective description and deliverables breakdown.</p>
+
+            <!-- Progress Bar -->
+            <div class="mb-6 bg-page p-4 rounded-2xl border border-line">
+                <div class="flex justify-between items-center text-xs mb-2">
+                    <span class="text-t3 font-medium">Story Completion Rate</span>
+                    <span id="modal-progress-text" class="font-bold text-emerald-500">75%</span>
+                </div>
+                <div class="w-full bg-soft h-2.5 rounded-full overflow-hidden">
+                    <div id="modal-progress-bar" class="bg-gradient-to-r from-barA to-barB h-full rounded-full transition-all duration-500" style="width: 75%;"></div>
+                </div>
+                <div class="mt-4 flex items-center gap-3">
+                    <span class="text-[11px] text-t2">Quick adjust:</span>
+                    <input type="range" min="0" max="100" value="75" id="modal-progress-slider" oninput="updateEpicProgress(this.value)" class="w-full accent-emerald-500 cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Stories Checklist -->
+            <div class="space-y-3">
+                <h4 class="text-xs font-semibold text-t3 uppercase tracking-wider">Aligned Stories & Milestones</h4>
+                <div id="modal-stories-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-line">
+                <button onclick="closeEpicModal()" class="px-4 py-2 bg-soft hover:bg-soft2 text-t3 text-xs font-medium rounded-xl transition">Close</button>
+                <button onclick="openEpicInJira()" class="px-5 py-2 bg-gradient-to-r from-barA to-barB text-barTxt text-xs font-semibold rounded-xl shadow-lg transition">Open in Jira <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-project-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-card border border-line rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeNewProjectModal()" class="absolute top-5 right-5 text-t2 hover:text-t1 transition w-8 h-8 rounded-full bg-page flex items-center justify-center border border-line">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-t1 mb-2">Add New Execution Project Vector</h3>
+            <p class="text-xs text-t2 mb-5">Define a new vector to branch into your mind-map timeline.</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-t3 mb-1.5">Project Name</label>
+                    <input type="text" id="new-proj-name" placeholder="e.g., Quantum Crypto Arbitrage" class="w-full bg-page border border-line rounded-xl px-4 py-2.5 text-xs text-t1 focus:outline-none focus:border-emerald-500 placeholder:text-t2/60">
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-line">
+                <button onclick="closeNewProjectModal()" class="px-4 py-2 bg-soft hover:bg-soft2 text-t3 text-xs font-medium rounded-xl transition">Cancel</button>
+                <button onclick="createNewProject()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-emerald-600/20 transition">Initialize Branch</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-semibold transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-base"></i> <span id="toast-msg">Action completed successfully</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
