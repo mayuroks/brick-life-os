@@ -1,0 +1,16 @@
+.git
+node_modules
+.opencode
+.aws-cli-v2
+.lavish
+deploy
+specs
+scripts
+docs
+persona
+brick
+deprecated
+openspec
+*.log
+.env
+.env.*
