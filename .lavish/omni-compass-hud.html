@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Map: Paths & Timelines</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        page: 'rgb(var(--page) / <alpha-value>)',
+                        card: 'rgb(var(--card) / <alpha-value>)',
+                        panel: 'rgb(var(--panel) / <alpha-value>)',
+                        line: 'rgb(var(--line) / <alpha-value>)',
+                        line2: 'rgb(var(--line2) / <alpha-value>)',
+                        soft: 'rgb(var(--soft) / <alpha-value>)',
+                        soft2: 'rgb(var(--soft2) / <alpha-value>)',
+                        t1: 'rgb(var(--t1) / <alpha-value>)',
+                        t2: 'rgb(var(--t2) / <alpha-value>)',
+                        t3: 'rgb(var(--t3) / <alpha-value>)',
+                        barA: 'rgb(var(--bar-a) / <alpha-value>)',
+                        barB: 'rgb(var(--bar-b) / <alpha-value>)',
+                        barTxt: 'rgb(var(--bar-txt) / <alpha-value>)',
+                        barChip: 'rgb(var(--bar-chip) / <alpha-value>)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light theme — inspired by #b2a3d8 (lavender) + #cee8e1 (mint) */
+            --page: 206 232 225;
+            --card: 248 252 250;
+            --panel: 235 244 240;
+            --line: 176 205 198;
+            --line2: 133 168 160;
+            --soft: 214 232 226;
+            --soft2: 196 219 212;
+            --t1: 27 52 48;
+            --t2: 74 104 99;
+            --t3: 91 121 115;
+            --bar-a: 178 163 216;
+            --bar-b: 147 128 201;
+            --bar-txt: 34 28 66;
+            --bar-chip: 246 243 252;
+        }
+        .dark {
+            /* Dark theme — original deep-navy */
+            --page: 11 15 25;
+            --card: 19 27 46;
+            --panel: 11 15 25;
+            --line: 30 41 59;
+            --line2: 71 85 105;
+            --soft: 30 41 59;
+            --soft2: 51 65 85;
+            --t1: 255 255 255;
+            --t2: 148 163 184;
+            --t3: 120 130 150;
+            --bar-a: 16 185 129;
+            --bar-b: 59 130 246;
+            --bar-txt: 255 255 255;
+            --bar-chip: 0 0 0;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: rgb(var(--page)); }
+        ::-webkit-scrollbar-thumb { background: rgb(var(--line)); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgb(var(--line2)); }
+    </style>
+</head>
+<body class="bg-page text-t1 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <header class="border-b border-line bg-card/85 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-barA to-barB flex items-center justify-center shadow-lg shadow-barA/30">
+                <i class="fa-solid fa-compass text-barTxt text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base md:text-lg tracking-tight bg-gradient-to-r from-barA via-barB to-barA bg-clip-text text-transparent">Life Map - Paths & Timelines 🔥</h1>
+                <p class="text-xs text-t2">Projects, Epics, Timelines. Choose paths 👉, reach you end goals ⛳, achieve trophies 🏆 🎖 🚀</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Timeline View Mode Toggle -->
+            <div class="bg-page border border-line p-1 rounded-xl flex items-center gap-1 text-xs">
+                <button onclick="setTimelineMode('weekly')" id="mode-weekly-btn" class="px-3 py-1.5 rounded-lg font-semibold bg-emerald-600 text-white transition">Weekly View (24 Wks)</button>
+                <button onclick="setTimelineMode('monthly')" id="mode-monthly-btn" class="px-3 py-1.5 rounded-lg font-medium text-t2 hover:text-t1 transition">Monthly View</button>
+            </div>
+            <!-- Light / Dark Theme Toggle -->
+            <button onclick="toggleTheme()" id="theme-toggle" class="w-10 h-10 rounded-xl bg-page border border-line hover:border-line2 flex items-center justify-center text-t2 hover:text-t1 transition" title="Toggle Light / Dark Theme">
+                <i id="theme-icon" class="fa-solid fa-moon text-base"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 p-6 relative overflow-auto">
+        <div class="bg-card border border-line rounded-3xl p-6 md:p-8 shadow-2xl h-[calc(100vh-7rem)] overflow-hidden flex flex-col relative">
+            <!-- Workspace Container -->
+            <div id="workspace-container" class="relative w-full flex-1 flex flex-col gap-4 overflow-auto pb-4">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </div>
+    </main>
+
+    <div id="epic-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-card border border-line rounded-3xl max-w-xl w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <button onclick="closeEpicModal()" class="absolute top-5 right-5 text-t2 hover:text-t1 transition w-8 h-8 rounded-full bg-page flex items-center justify-center border border-line">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div id="modal-project-badge" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Project</div>
+                <span id="modal-epic-dates" class="text-xs text-t2 font-medium">Horizon Vector</span>
+            </div>
+
+            <h3 id="modal-epic-title" class="text-xl font-bold text-t1 mb-2">Epic Title</h3>
+            <p id="modal-epic-desc" class="text-xs text-t2 mb-6">Epic objective description and deliverables breakdown.</p>
+
+            <!-- Progress Bar -->
+            <div class="mb-6 bg-page p-4 rounded-2xl border border-line">
+                <div class="flex justify-between items-center text-xs mb-2">
+                    <span class="text-t3 font-medium">Story Completion Rate</span>
+                    <span id="modal-progress-text" class="font-bold text-emerald-500">75%</span>
+                </div>
+                <div class="w-full bg-soft h-2.5 rounded-full overflow-hidden">
+                    <div id="modal-progress-bar" class="bg-gradient-to-r from-barA to-barB h-full rounded-full transition-all duration-500" style="width: 75%;"></div>
+                </div>
+                <div class="mt-4 flex items-center gap-3">
+                    <span class="text-[11px] text-t2">Quick adjust:</span>
+                    <input type="range" min="0" max="100" value="75" id="modal-progress-slider" oninput="updateEpicProgress(this.value)" class="w-full accent-emerald-500 cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Stories Checklist -->
+            <div class="space-y-3">
+                <h4 class="text-xs font-semibold text-t3 uppercase tracking-wider">Aligned Stories & Milestones</h4>
+                <div id="modal-stories-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-line">
+                <button onclick="closeEpicModal()" class="px-4 py-2 bg-soft hover:bg-soft2 text-t3 text-xs font-medium rounded-xl transition">Close</button>
+                <button onclick="saveEpicChanges()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-emerald-600/20 transition">Save Vector Delta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-project-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-card border border-line rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeNewProjectModal()" class="absolute top-5 right-5 text-t2 hover:text-t1 transition w-8 h-8 rounded-full bg-page flex items-center justify-center border border-line">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-t1 mb-2">Add New Execution Project Vector</h3>
+            <p class="text-xs text-t2 mb-5">Define a new vector to branch into your mind-map timeline.</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-t3 mb-1.5">Project Name</label>
+                    <input type="text" id="new-proj-name" placeholder="e.g., Quantum Crypto Arbitrage" class="w-full bg-page border border-line rounded-xl px-4 py-2.5 text-xs text-t1 focus:outline-none focus:border-emerald-500 placeholder:text-t2/60">
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-line">
+                <button onclick="closeNewProjectModal()" class="px-4 py-2 bg-soft hover:bg-soft2 text-t3 text-xs font-medium rounded-xl transition">Cancel</button>
+                <button onclick="createNewProject()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-emerald-600/20 transition">Initialize Branch</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-semibold transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-base"></i> <span id="toast-msg">Action completed successfully</span>
+    </div>
+
+    <script>
+        let projectsData = [
+            {
+                id: 1,
+                name: "Android-to-Backend Core Transition",
+                epics: [
+                    { id: 101, title: "Distributed Systems & Microservices", progress: 85, startWeek: 26, endWeek: 30, startMonth: 7, endMonth: 8, desc: "Mastering gRPC, REST APIs with Spring Boot & Go.", stories: ["Protocol buffer schema definitions", "Circuit breaker resilience pattern", "Distributed tracing with Jaeger"] },
+                    { id: 102, title: "Spring Boot & PostgreSQL Pipeline", progress: 60, startWeek: 31, endWeek: 35, startMonth: 8, endMonth: 9, desc: "High throughput data persistence and connection pooling.", stories: ["HikariCP tuning", "Flyway migration scripts", "JPA transaction boundaries"] },
+                    { id: 103, title: "Cloud Infrastructure & Kubernetes", progress: 30, startWeek: 36, endWeek: 42, startMonth: 9, endMonth: 10, desc: "Deploying cluster nodes and managing ingress controllers.", stories: ["Multi-stage Dockerfile builds", "Helm chart templates", "K8s health probe configurations"] },
+                    { id: 104, title: "System Design Interview Mastery", progress: 75, startWeek: 43, endWeek: 49, startMonth: 10, endMonth: 12, desc: "Scaling systems to 10M DAU with fault-tolerant storage.", stories: ["Database sharding strategies", "CDN caching tiers", "Rate limiting algorithms"] },
+                    { id: 105, title: "One-Week Spike", progress: 30, startWeek: 27, endWeek: 27, startMonth: 7, endMonth: 7, desc: "Single week focused spike.", stories: ["Spike research", "Findings writeup"] },
+                    { id: 106, title: "Two-Week Deep Dive", progress: 40, startWeek: 28, endWeek: 29, startMonth: 7, endMonth: 7, desc: "Two week deep dive sprint.", stories: ["Investigate", "Prototype", "Review"] }
+                ]
+            },
+            {
+                id: 2,
+                name: "High-Budget Company Assault & Narrative",
+                epics: [
+                    { id: 201, title: "Target Tier-1 Company Research", progress: 90, startWeek: 26, endWeek: 30, startMonth: 7, endMonth: 7, desc: "Identifying tier-1 tech companies with top compensation.", stories: ["Crunchbase funding filter", "Engineering blog analysis", "Tech stack fingerprinting"] },
+                    { id: 202, title: "Resume & Portfolio Rewrite (Staff Level)", progress: 65, startWeek: 31, endWeek: 38, startMonth: 8, endMonth: 9, desc: "Crafting technical teardowns instead of generic resumes.", stories: ["System architecture critique draft", "Open source contribution hook", "Metrics quantification"] },
+                    { id: 203, title: "Strategic Outreach & Referral Cadence", progress: 25, startWeek: 39, endWeek: 49, startMonth: 10, endMonth: 12, desc: "Pinpoint VP Engineering and Staff leads across accounts.", stories: ["LinkedIn Sales Navigator queries", "Common alumni connection graph"] }
+                ]
+            },
+            {
+                id: 3,
+                name: "Algorithmic Execution Engine (LeetCode)",
+                epics: [
+                    { id: 301, title: "Blind 75 & NeetCode 150 Core Sprint", progress: 95, startWeek: 26, endWeek: 37, startMonth: 7, endMonth: 9, desc: "Mastering graph theory, dynamic programming & tries.", stories: ["Course Schedule II", "Edit distance memoization", "Maximum XOR of two numbers"] },
+                    { id: 302, title: "Advanced Data Structures & Contests", progress: 45, startWeek: 38, endWeek: 49, startMonth: 10, endMonth: 12, desc: "Segment trees, Fenwick trees, and mock speedruns.", stories: ["Range sum query mutable", "Weekly contest virtual rating"] }
+                ]
+            },
+            {
+                id: 4,
+                name: "Swing Trading Bot & Financial Pipeline",
+                epics: [
+                    { id: 401, title: "Market Data Ingestion & WebSocket", progress: 88, startWeek: 26, endWeek: 35, startMonth: 7, endMonth: 9, desc: "Real-time tick data streaming with zero drop rate.", stories: ["Polygon.io websocket client", "Ring buffer memory pooling"] },
+                    { id: 402, title: "Backtesting Engine & Quantitative Signals", progress: 40, startWeek: 36, endWeek: 49, startMonth: 9, endMonth: 12, desc: "Moving average crossover and volatility breakout heuristics.", stories: ["Bollinger band standard deviation vector", "Risk management worker"] }
+                ]
+            },
+            {
+                id: 5,
+                name: "Open-Source Footprint & Trophies",
+                epics: [
+                    { id: 501, title: "Authoring Production-Grade OS CLI Tools", progress: 50, startWeek: 30, endWeek: 45, startMonth: 8, endMonth: 11, desc: "Building Rust & Go CLI utilities for rapid automation.", stories: ["Argument parser setup", "Colorized terminal formatting", "Homebrew tap distribution"] }
+                ]
+            },
+            {
+                id: 6,
+                name: "Health & Physical Optimization Protocol",
+                epics: [
+                    { id: 601, title: "Hypertrophy & Cardiovascular Expansion", progress: 85, startWeek: 26, endWeek: 49, startMonth: 7, endMonth: 12, desc: "Strength compound lifts and Zone 2 cardio intervals.", stories: ["Squat & deadlift form audits", "Protein intake threshold (160g)", "Recovery sleep score tracking"] }
+                ]
+            },
+            {
+                id: 7,
+                name: "Wealth Management & Asset Allocation",
+                epics: [
+                    { id: 701, title: "Automated Tax Optimization & Portfolio Rebalance", progress: 70, startWeek: 28, endWeek: 48, startMonth: 7, endMonth: 11, desc: "Core-satellite ETF allocation and high-yield reserves.", stories: ["High-yield savings account setup", "Quarterly rebalance check"] }
+                ]
+            },
+            {
+                id: 8,
+                name: "Household Infrastructure & Living Systems",
+                epics: [
+                    { id: 801, title: "Home Automation & Reliability Matrix", progress: 60, startWeek: 32, endWeek: 45, startMonth: 8, endMonth: 11, desc: "Smart home hubs, network security, and backup power.", stories: ["Mesh router configuration", "UPS battery backup tests"] }
+                ]
+            }
+        ];
+
+        let currentTimelineMode = 'weekly'; // 'weekly' or 'monthly'
+        let activeEpic = null;
+        let selectedProject = null;
+
+        window.onload = function() {
+            let saved = 'light';
+            try {
+                saved = localStorage.getItem('life-map-theme') || 'light';
+            } catch (e) { /* sandboxed iframe: localStorage unavailable */ }
+            const dark = saved === 'dark';
+            document.documentElement.classList.toggle('dark', dark);
+            updateThemeIcon(dark);
+            renderWorkspace();
+        };
+
+        function toggleTheme() {
+            const root = document.documentElement;
+            const dark = !root.classList.contains('dark');
+            root.classList.toggle('dark', dark);
+            try {
+                localStorage.setItem('life-map-theme', dark ? 'dark' : 'light');
+            } catch (e) { /* sandboxed iframe: localStorage unavailable */ }
+            updateThemeIcon(dark);
+        }
+
+        function updateThemeIcon(dark) {
+            const icon = document.getElementById('theme-icon');
+            icon.className = dark ? 'fa-solid fa-sun text-base' : 'fa-solid fa-moon text-base';
+        }
+
+        function setTimelineMode(mode) {
+            currentTimelineMode = mode;
+            document.getElementById('mode-weekly-btn').className = mode === 'weekly' ? 'px-3 py-1.5 rounded-lg font-semibold bg-emerald-600 text-white transition' : 'px-3 py-1.5 rounded-lg font-medium text-t2 hover:text-t1 transition';
+            document.getElementById('mode-monthly-btn').className = mode === 'monthly' ? 'px-3 py-1.5 rounded-lg font-semibold bg-emerald-600 text-white transition' : 'px-3 py-1.5 rounded-lg font-medium text-t2 hover:text-t1 transition';
+            renderWorkspace();
+        }
+
+        // Render combined Mind-Map and Jira-Style Timeline Workspace with Project Vectors / Epics header ABOVE the projects
+        function renderWorkspace() {
+            const container = document.getElementById('workspace-container');
+            container.innerHTML = '';
+
+            let columns = [];
+            if (currentTimelineMode === 'weekly') {
+                // 24 weeks across 6 months (July to Dec: Weeks 26 to 49, 4 weeks per month)
+                for (let w = 26; w <= 49; w++) {
+                    columns.push(`W${w}`);
+                }
+            } else {
+                columns = ['July', 'August', 'September', 'October', 'November', 'December'];
+            }
+
+            // Single scrollport is the card itself. Use a frozen-column CSS grid:
+            // column 1 = sticky project node (never scrolls away), column 2 = scrollable timeline
+            // so epic bars can never appear under the project titles.
+            const grid = document.createElement('div');
+            grid.className = `relative grid ${currentTimelineMode === 'weekly' ? 'min-w-[4845px]' : 'min-w-[2500px]'}`;
+            grid.style.gridTemplateColumns = '320px minmax(0, 1fr)';
+            grid.style.gridAutoRows = 'auto';
+            grid.style.gap = '1rem';
+
+            // Timeline Header spans both columns, sticky under the master header
+            let timelineHeader = document.createElement('div');
+            timelineHeader.className = "flex items-stretch bg-page border border-line rounded-2xl sticky top-0 z-30 shadow-xl";
+            timelineHeader.style.gridColumn = '1 / -1';
+
+            let headerTitleSpace = document.createElement('div');
+            headerTitleSpace.className = "w-80 flex-shrink-0 font-bold text-xs text-t2 uppercase tracking-wider px-4 flex items-center border-r border-line/60 sticky left-0 bg-page z-20";
+            headerTitleSpace.innerText = "Project Vectors / Epics";
+            timelineHeader.appendChild(headerTitleSpace);
+
+            let scaleWrap = document.createElement('div');
+            scaleWrap.className = "flex-1 flex flex-col flex-shrink-0";
+
+            if (currentTimelineMode === 'weekly') {
+                // Month grouping band: July - December, each spanning 4 week columns
+                let monthBand = document.createElement('div');
+                monthBand.className = "grid text-[10px] font-bold text-t3 uppercase tracking-wider border-b border-line/70 text-center z-10";
+                monthBand.style.gridTemplateColumns = `repeat(6, minmax(0, 1fr))`;
+                ['July','August','September','October','November','December'].forEach((m) => {
+                    let cell = document.createElement('div');
+                    cell.className = "border-l border-line/60 py-1 truncate px-1";
+                    cell.innerText = m;
+                    monthBand.appendChild(cell);
+                });
+                scaleWrap.appendChild(monthBand);
+
+                // Week band: W26 .. W49
+                let weekBand = document.createElement('div');
+                weekBand.className = "grid text-[10px] font-semibold text-t2 text-center z-10";
+                weekBand.style.gridTemplateColumns = `repeat(${columns.length}, minmax(0, 1fr))`;
+                columns.forEach((col, idx) => {
+                    let span = document.createElement('div');
+                    span.className = (idx < columns.length - 1 ? "border-r border-line/60 " : "") + "py-0.5 truncate px-1";
+                    span.innerText = col;
+                    weekBand.appendChild(span);
+                });
+                scaleWrap.appendChild(weekBand);
+            } else {
+                let scaleBar = document.createElement('div');
+                scaleBar.className = "grid text-[10px] md:text-[11px] font-semibold text-t2 text-center z-10 py-1";
+                scaleBar.style.gridTemplateColumns = `repeat(${columns.length}, minmax(0, 1fr))`;
+                columns.forEach((col, idx) => {
+                    let span = document.createElement('div');
+                    span.className = (idx < columns.length - 1 ? "border-r border-line/60 " : "") + "py-0.5 truncate px-1";
+                    span.innerText = col;
+                    scaleBar.appendChild(span);
+                });
+                scaleWrap.appendChild(scaleBar);
+            }
+
+            timelineHeader.appendChild(scaleWrap);
+            grid.appendChild(timelineHeader);
+
+            // Render each project as one grid row (col1 = sticky node, col2 = epic tracks)
+            projectsData.forEach(proj => {
+                // Column 1: Sticky Project Vector Node (clean title, no badges/percentages)
+                let projNode = document.createElement('div');
+                projNode.style.gridColumn = '1';
+                projNode.className = "w-80 bg-card border border-line p-4 rounded-xl shadow-lg flex flex-col justify-center sticky left-0 z-20";
+                projNode.innerHTML = `
+                    <h4 class="font-bold text-sm text-t1 tracking-tight">${proj.name}</h4>
+                    <span class="text-[11px] text-t2 mt-1">${proj.epics.length} Aligned Epics</span>
+                `;
+                grid.appendChild(projNode);
+
+                // Column 2: Epic tracks with continuous vertical column dividers
+                let timelineTracks = document.createElement('div');
+                timelineTracks.style.gridColumn = '2';
+                timelineTracks.className = "relative flex flex-col justify-center space-y-2 py-2 px-3 bg-panel/40 border border-line/60 hover:border-line rounded-2xl";
+                timelineTracks.style.backgroundImage = 'linear-gradient(to right, rgba(var(--line),0.6) 1px, transparent 1px)';
+                timelineTracks.style.backgroundSize = `calc(100% / ${columns.length}) 100%`;
+                timelineTracks.style.backgroundPosition = 'left center';
+
+                proj.epics.forEach(epic => {
+                    let trackRow = document.createElement('div');
+                    trackRow.className = "relative h-9 bg-panel/90 border border-line/80 hover:border-line2 rounded-xl flex items-center px-3 cursor-pointer group/epic transition overflow-hidden shadow-sm";
+                    trackRow.onclick = () => openEpicModal(proj, epic);
+
+                    // Compute positioning based on Weekly or Monthly mode
+                    let leftPercent = 0;
+                    let widthPercent = 30;
+
+                    if (currentTimelineMode === 'weekly') {
+                        const minW = 26;
+                        const maxW = 49;
+                        const spanW = maxW - minW;
+                        leftPercent = Math.max(0, Math.min(100, ((epic.startWeek - minW) / spanW) * 100));
+                        let endW = Math.min(49, epic.endWeek);
+                        widthPercent = Math.max(2, Math.min(100 - leftPercent, ((endW - epic.startWeek + 1) / (spanW + 1)) * 100));
+                    } else {
+                        const minM = 7;
+                        const maxM = 12;
+                        const spanM = maxM - minM + 1;
+                        leftPercent = Math.max(0, Math.min(100, ((epic.startMonth - minM) / spanM) * 100));
+                        let endM = Math.max(epic.startMonth, epic.endMonth);
+                        widthPercent = Math.max(15, Math.min(100 - leftPercent, ((endM - epic.startMonth + 1) / spanM) * 100));
+                    }
+
+                    // Timeline Gantt bar container
+                    let barContainer = document.createElement('div');
+                    barContainer.className = "absolute inset-x-3 inset-y-1.5 flex items-center pointer-events-none z-10";
+
+                    let ganttBar = document.createElement('div');
+                    ganttBar.className = "absolute h-6 rounded-lg bg-gradient-to-r from-barA to-barB shadow-md flex items-center px-3 justify-between text-barTxt text-[11px] font-medium transition group-hover/epic:brightness-110";
+                    ganttBar.style.left = leftPercent + '%';
+                    ganttBar.style.width = widthPercent + '%';
+                    ganttBar.innerHTML = `
+                        <span class="truncate pr-2 font-semibold">${epic.title}</span>
+                        <span class="bg-barChip/35 px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0">${epic.progress}%</span>
+                    `;
+
+                    barContainer.appendChild(ganttBar);
+                    trackRow.appendChild(barContainer);
+                    timelineTracks.appendChild(trackRow);
+                });
+
+                grid.appendChild(timelineTracks);
+            });
+
+            container.appendChild(grid);
+        }
+
+        function openEpicModal(proj, epic) {
+            selectedProject = proj;
+            activeEpic = epic;
+
+            document.getElementById('modal-project-badge').innerText = proj.name;
+            document.getElementById('modal-epic-dates').innerText = currentTimelineMode === 'weekly' ? `Weeks ${epic.startWeek} - ${epic.endWeek}` : `Months ${epic.startMonth} - ${epic.endMonth}`;
+            document.getElementById('modal-epic-title').innerText = epic.title;
+            document.getElementById('modal-epic-desc').innerText = epic.desc;
+            document.getElementById('modal-progress-text').innerText = epic.progress + '%';
+            document.getElementById('modal-progress-bar').style.width = epic.progress + '%';
+            document.getElementById('modal-progress-slider').value = epic.progress;
+
+            let storiesList = document.getElementById('modal-stories-list');
+            storiesList.innerHTML = '';
+            epic.stories.forEach((story, idx) => {
+                let div = document.createElement('label');
+                div.className = "flex items-center gap-3 p-3 rounded-xl bg-page border border-line text-xs text-t3 cursor-pointer hover:border-line2 transition";
+                div.innerHTML = `
+                    <input type="checkbox" ${epic.progress > (idx * 30) ? 'checked' : ''} class="w-4 h-4 rounded accent-emerald-500 cursor-pointer">
+                    <span class="font-medium">${story}</span>
+                `;
+                storiesList.appendChild(div);
+            });
+
+            document.getElementById('epic-modal').classList.remove('hidden');
+        }
+
+        function closeEpicModal() {
+            document.getElementById('epic-modal').classList.add('hidden');
+        }
+
+        function updateEpicProgress(val) {
+            if (activeEpic) {
+                activeEpic.progress = parseInt(val);
+                document.getElementById('modal-progress-text').innerText = val + '%';
+                document.getElementById('modal-progress-bar').style.width = val + '%';
+            }
+        }
+
+        function saveEpicChanges() {
+            renderWorkspace();
+            closeEpicModal();
+            showToast("Vector convergence delta saved successfully!");
+        }
+
+        function openNewProjectModal() {
+            document.getElementById('new-project-modal').classList.remove('hidden');
+        }
+
+        function closeNewProjectModal() {
+            document.getElementById('new-project-modal').classList.add('hidden');
+        }
+
+        function createNewProject() {
+            const name = document.getElementById('new-proj-name').value.trim();
+
+            if (!name) {
+                showToast("Please enter a project name");
+                return;
+            }
+
+            const newProj = {
+                id: projectsData.length + 1,
+                name: name,
+                epics: [
+                    { id: Date.now() + 1, title: "Foundation & Architecture Setup", progress: 25, startWeek: 28, endWeek: 35, startMonth: 7, endMonth: 8, desc: "Initial scaffolding and core requirements definition.", stories: ["Requirements specification document", "Repository initialization"] }
+                ]
+            };
+
+            projectsData.push(newProj);
+            renderWorkspace();
+            closeNewProjectModal();
+            showToast("New project vector branch initialized!");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

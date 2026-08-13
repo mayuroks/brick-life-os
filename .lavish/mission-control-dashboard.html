@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'status-backlog': '#6b7280',
+                        'status-ready': '#9ca3af',
+                        'status-todo': '#3b82f6',
+                        'status-progress': '#f59e0b',
+                        'status-waiting': '#8b5cf6',
+                        'status-done': '#10b981',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .status-backlog { background-color: #e5e7eb; }
+        .status-ready { background-color: #f3f4f6; }
+        .status-todo { background-color: #dbeaffe; }
+        .status-progress { background-color: #fff7ed; }
+        .status-waiting { background-color: #ede5fe; }
+        .status-done { background-color: #d1fae5; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-900">Mission Control Dashboard</h1>
+                <p class="text-sm text-gray-600 mt-1">Jira Workflow overview across all Life OS domains</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-3xl font-bold text-gray-900">0</div>
+                    <div class="text-sm text-gray-600">Backlog</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-3xl font-bold text-gray-900">0</div>
+                    <div class="text-sm text-gray-600">Ready</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-3xl font-bold text-blue-600">0</div>
+                    <div class="text-sm text-gray-600">Todo-Week</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-3xl font-bold text-amber-600">0</div>
+                    <div class="text-sm text-gray-600">In Progress</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-3xl font-bold text-purple-600">0</div>
+                    <div class="text-sm text-gray-600">Waiting</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-3xl font-bold text-green-600">0</div>
+                    <div class="text-sm text-gray-600">Done (This Week)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Ready to Pick Up</h2>
+                    <p class="text-sm text-gray-600">Items in Ready or Todo-Week status</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-center py-8 text-gray-500">
+                        <p class="mb-2">📋</p>
+                        <p>No items ready for picking</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Blocked / FollowUp</h2>
+                    <p class="text-sm text-gray-600">Items in Waiting status requiring attention</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-center py-8 text-gray-500">
+                        <p class="mb-2">⛔</p>
+                        <p>No blocked items</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Weekly Delivery Snapshot</h2>
+                <p class="text-sm text-gray-600">Week: 2026-W33</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600">0</div>
+                        <div class="text-xs text-gray-600">Backlog</div>
+                    </div>
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600">0</div>
+                        <div class="text-xs text-gray-600">Ready</div>
+                    </div>
+                    <div class="text-center p-4 bg-amber-50 rounded-lg">
+                        <div class="text-2xl font-bold text-amber-600">0</div>
+                        <div class="text-xs text-gray-600">In Progress</div>
+                    </div>
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600">0</div>
+                        <div class="text-xs text-gray-600">Done This Week</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="text-center py-4 text-gray-500">
+                        <p>📊 Delivery Perfection: --%</p>
+                        <p class="text-xs">Streak: 0 days / 0 clean weeks</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">By Domain</h2>
+                <p class="text-sm text-gray-600">Issue count by project</p>
+            </div>
+            <div class="p-6">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-700">Domain</th>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-700 text-right">Backlog</th>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-700 text-right">Ready</th>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-700 text-right">Todo</th>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-700 text-right">In Progress</th>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-700 text-right">Waiting</th>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-700 text-right">Done</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">Career (BF)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">Family (FAM)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">House (HM)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">Finance (FIN)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">Network (BR)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">Health/Diet (BH)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">LifeOS (BS)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">Docs (MDP)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">Ideas (ART)</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                            <td class="px-4 py-2 text-sm text-right">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Status Distribution</h2>
+                <p class="text-sm text-gray-600">Total issues: 0 across all projects</p>
+            </div>
+            <div class="p-6">
+                <div class="h-48 flex items-center justify-center">
+                    <div class="text-center text-gray-400">
+                        <div class="mb-2">📊</div>
+                        <p>No data to visualize</p>
+                        <p class="text-xs">Populate issues to see distribution</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Streak Tracker</h2>
+                <p class="text-sm text-gray-600">Delivery perfection and consistency metrics</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="text-center p-4 border border-gray-200 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-900">--%</div>
+                        <div class="text-xs text-gray-500">Delivery Perfection</div>
+                    </div>
+                    <div class="text-center p-4 border border-gray-200 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-900">0</div>
+                        <div class="text-xs text-gray-500">Days Streak</div>
+                    </div>
+                    <div class="text-center p-4 border border-gray-200 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-900">0</div>
+                        <div class="text-xs text-gray-500">Clean Weeks</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="text-center py-2 text-gray-500 text-sm">
+                        Tier: <span class="font-medium">average</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Weekly Targets</h2>
+                <p class="text-sm text-gray-600">Current week: 2026-W33</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-900">0</div>
+                        <div class="text-xs text-gray-500">Targets Set</div>
+                    </div>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-900">0</div>
+                        <div class="text-xs text-gray-500">Targets Hit</div>
+                    </div>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-900">0</div>
+                        <div class="text-xs text-gray-500">Trophies 🏆</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Long-Stuck Issues</h2>
+                <p class="text-sm text-gray-600">Issues unchanged for 28+ days</p>
+            </div>
+            <div class="p-6">
+                <div class="text-center py-8 text-gray-500">
+                    <p class="mb-2">🚩</p>
+                    <p>No long-stuck issues</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
