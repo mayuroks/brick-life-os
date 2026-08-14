@@ -45,7 +45,7 @@ PARENT_ID = "98311"
 DOMAINS = [
     ("Career", "BF"), ("Family", "FAM"), ("House", "HM"), ("Finance", "FIN"),
     ("Network", "BR"), ("Health/Diet", "BH"), ("LifeOS", "BS"),
-    ("Docs", "MDP"), ("Ideas", "ART"),
+    ("Docs", "MDP"), ("Next Ideas", "ART"),
 ]
 
 # Statuses in dashboard order with panel colors (Confluence panel macro names).
@@ -128,21 +128,19 @@ def build_body(counts: dict) -> str:
 
     # --- Status Distribution removed (2026-08-11): ugly pie not wanted ---
 
-    # --- Two-column: Ready to Pick | Blocked ---
-    left = ("<h3>🔴 Ready to Pick Up</h3>"
-            "<p>Ready or Todo-Week, oldest first.</p>"
-            + jira(f'project in ({PROJECTS}) AND status in ("Ready","Todo-Week") ORDER BY updated ASC', 20))
-    right = ("<h3>⛔ Blocked / FollowUp</h3>"
-             "<p>Waiting — needs attention.</p>"
-             + jira(f'project in ({PROJECTS}) AND status = "Waiting" ORDER BY updated ASC', 20))
-    blocks.append("<ac:layout>"
-                  "<ac:layout-cell>"
-                  f"<ac:parameter ac:name=\"width\">{50}</ac:parameter>"
-                  f"{left}</ac:layout-cell>"
-                  "<ac:layout-cell>"
-                  f"<ac:parameter ac:name=\"width\">{50}</ac:parameter>"
-                  f"{right}</ac:layout-cell>"
-                  "</ac:layout>")
+    # --- Focus: combined — In Progress on top, Ready/Todo-Week below, priority High-first ---
+    blocks.append("<h2>🧭 Focus</h2>")
+    blocks.append("<h3>🎯 In Progress first, then Ready / Todo-Week</h3>"
+                  + jira(f'project in ({PROJECTS}) AND status in ("In Progress","Ready","Todo-Week") ORDER BY status ASC, priority DESC', 20))
+
+    # --- Blocked / FollowUp (below Focus, above Delivery) ---
+    blocks.append("<h3>⛔ Blocked / FollowUp</h3>"
+                  "<p>Waiting — needs attention.</p>"
+                  + jira(f'project in ({PROJECTS}) AND status = "Waiting" ORDER BY priority DESC, updated ASC', 20))
+
+    # --- Next Ideas (ART) standalone, below Blocked/FollowUp ---
+    blocks.append("<h2>💡 Next Ideas (ART)</h2>")
+    blocks.append(jira('project = "ART" AND statusCategory != Done ORDER BY updated ASC', 15))
 
     # --- Weekly Delivery snapshot (static) ---
     blocks.append("<h2>📅 Weekly Delivery Snapshot</h2>")
@@ -169,6 +167,8 @@ def build_body(counts: dict) -> str:
     # --- Per-domain live list ---
     blocks.append("<h2>🗂️ Open by Domain (live)</h2>")
     for name, key in DOMAINS:
+        if key == "ART":
+            continue
         blocks.append(f"<h3>{name} ({key})</h3>")
         blocks.append(jira(f'project = "{key}" AND statusCategory != Done ORDER BY updated ASC', 8))
 
