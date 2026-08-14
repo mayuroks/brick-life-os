@@ -199,7 +199,7 @@ consistent everywhere — delivering a coherent interface persona standalone.
 - What happens when the calendar provider is Google vs Apple and times/
   timezone differ? (resolve during setup; reminder text identical)
 - How is a friction report handled when no obvious next re-slot exists?
-  (hold visible in Waiting with a note, never re-hide)
+  (hold visible in Blocked Or FollowUp with a note, never re-hide)
 - What if the user sets no weekly targets? (scoreboard posts without target
   hits and reminds to set them)
 - What if the user expects today's agenda inside a calendar event? (it is not
@@ -215,7 +215,7 @@ consistent everywhere — delivering a coherent interface persona standalone.
 - **FR-002**: System MUST support 9 projects: Career, Family, House, Finance,
   Network, Health/Diet, LifeOS, Docs, Ideas.
 - **FR-003**: System MUST model the workflow: Backlog → Ready → Todo-Week →
-  In Progress → Waiting → Done.
+  In Progress → Blocked Or FollowUp → Done.
 - **FR-004**: System MUST support labels: constraints (`loc/time/person`),
   `week:YYYY-Www`, `needs-research`/`research-done`, `routine:*`, `internal`,
   and auto-flagged `long-stuck` (unchanged ≥28 days).
@@ -248,7 +248,7 @@ consistent everywhere — delivering a coherent interface persona standalone.
   anti-drift, problem→solution→move-on) across all surfaces, and be
   configurable.
 - **FR-012**: System MUST keep an internal/antivisible commitment visible and
-  never delete or hide it; it may only be re-slotted or held in Waiting.
+  never delete or hide it; it may only be re-slotted or held in Blocked Or FollowUp.
 - **FR-013**: Setup MUST NOT build in v1: Telegram bot, cron/daemon,
   calendar-write automation, Dream/Goals Epics, "why" doc, animated
   dashboard.

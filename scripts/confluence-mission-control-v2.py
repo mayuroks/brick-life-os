@@ -54,7 +54,7 @@ STATUS_OUT = [
     ("Ready", "tip", "🏁"),
     ("Todo-Week", "info", "📝"),
     ("In Progress", "warning", "🔨"),
-    ("Waiting", "info", "⛔"),
+    ("Blocked Or FollowUp", "warning", "⛔"),
     ("Done · this week", "success", "✅"),
 ]
 
@@ -130,13 +130,13 @@ def build_body(counts: dict) -> str:
 
     # --- Focus: combined — In Progress on top, Ready/Todo-Week below, priority High-first ---
     blocks.append("<h2>🧭 Focus</h2>")
-    blocks.append("<h3>🎯 In Progress first, then Ready / Todo-Week</h3>"
-                  + jira(f'project in ({PROJECTS}) AND status in ("In Progress","Ready","Todo-Week") ORDER BY status ASC, priority DESC', 20))
+    blocks.append("<h3>🎯 In Progress first, then Todo-Week</h3>"
+                  + jira(f'project in ({PROJECTS}) AND status in ("In Progress","Todo-Week") ORDER BY status ASC, priority DESC', 20))
 
     # --- Blocked / FollowUp (below Focus, above Delivery) ---
     blocks.append("<h3>⛔ Blocked / FollowUp</h3>"
-                  "<p>Waiting — needs attention.</p>"
-                  + jira(f'project in ({PROJECTS}) AND status = "Waiting" ORDER BY priority DESC, updated ASC', 20))
+                  "<p>Blocked or awaiting something.</p>"
+                  + jira(f'project in ({PROJECTS}) AND status = "Blocked Or FollowUp" ORDER BY priority DESC, updated ASC', 20))
 
     # --- Next Ideas (ART) standalone, below Blocked/FollowUp ---
     blocks.append("<h2>💡 Next Ideas (ART)</h2>")
@@ -158,7 +158,7 @@ def build_body(counts: dict) -> str:
         tds = (f"<td>{name} ({key})</td>"
                + "".join(f"<td>{d.get(s, 0)}</td>"
                          for s in ["Backlog", "Ready", "Todo-Week",
-                                   "In Progress", "Waiting", "Done"]))
+                                   "In Progress", "Blocked Or FollowUp", "Done"]))
         rows.append(f"<tr>{tds}</tr>")
     blocks.append("<table>"
                   + "<tbody>" + "".join(rows) + "</tbody>"
@@ -208,7 +208,7 @@ def jira_count(jql: str, headers: dict) -> int:
 
 
 def build_counts(headers: dict) -> dict:
-    statuses = ["Backlog", "Ready", "Todo-Week", "In Progress", "Waiting", "Done"]
+    statuses = ["Backlog", "Ready", "Todo-Week", "In Progress", "Blocked Or FollowUp", "Done"]
     counts = {
         "PROJECTS": PROJECTS,
         "total_open": jira_count(f'project in ({PROJECTS}) AND statusCategory != Done', headers),

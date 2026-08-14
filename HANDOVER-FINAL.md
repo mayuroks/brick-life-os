@@ -159,7 +159,7 @@ hopeless < average < good < elite < god-mode
 
 ## 5. Terminology
 
-- **Backlog / Ready / Todo-Week / In Progress / Waiting / Done** — pipeline.
+- **Backlog / Ready / Todo-Week / In Progress / Blocked Or FollowUp / Done** — pipeline.
 - **Fear-trigger** — calendar event injecting a consequence before execution (§3).
 - **Antivisible commitment** — an internal stake you've made into a real Jira issue (the fix for your hiding-self-goals problem).
 - **Assess / grill** — agent judges a task: urgency, cost-benefit, elevation, routine-vs-once (§7).
@@ -173,7 +173,7 @@ hopeless < average < good < elite < god-mode
 
 **Projects (9):** Career, Family, House, Finance, Network, Health/Diet, LifeOS, Docs, Ideas.
 
-**Workflow:** `Backlog → Ready → Todo-Week → In Progress → Waiting → Done`
+**Workflow:** `Backlog → Ready → Todo-Week → In Progress → Blocked Or FollowUp → Done`
 
 **Labels:** constraints `loc/time/person` · `week:YYYY-Www` · `needs-research`/`research-done` · `routine:*` · `internal` (antivisible self-commitment) · `long-stuck` (auto-flagged)
 
@@ -219,7 +219,7 @@ Max delivery 82% → status: GOOD
 - **"what next?"** → agent **assesses** (not just lists): reads today's meetings + Todo-Week, then grills/rates and suggests *one* thing, plus today's fear-trigger already fired. Surfaces internal antivisible tasks so they don't hide. Leads with **one daily rage-fuel one-liner** (§3A).
 - **Do it** → **"done KEY-42"** → agent marks Done, ticks delivery.
 - **Log practice** → **"practice <X> done"** → agent increments the streak.
-- **Friction** → *"can't do X because Y"* → agent re-slots / moves to Waiting / keeps it visible (never re-hides it), suggests next.
+- **Friction** → *"can't do X because Y"* → agent re-slots / moves to Blocked Or FollowUp / keeps it visible (never re-hides it), suggests next.
 - **Capture** → **"add to backlog: X"** / voice → agent files + assesses (priority, routine/once, internal?) — **making your own stakes as visible as external ones.**
 
 ---

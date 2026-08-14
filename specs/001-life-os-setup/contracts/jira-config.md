@@ -23,14 +23,14 @@ defaults to `Ideas` rather than erroring.
 
 ## Workflow (exact order)
 
-`Backlog → Ready → Todo-Week → In Progress → Waiting → Done`
+`Backlog → Ready → Todo-Week → In Progress → Blocked Or FollowUp → Done`
 
 ## Saved Filters
 
 1. Pipeline (all open)
 2. Backlog
 3. Todo-Week (this week's picks)
-4. Long-stuck (`status in (Ready, Todo-Week, Waiting) AND updated <= -28d`)
+4. Long-stuck (`status in (Ready, Todo-Week, Blocked Or FollowUp) AND updated <= -28d`)
 5. Done-this-week
 
 ## Dashboard Gadgets (15-min refresh, low-effort)

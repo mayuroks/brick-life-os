@@ -47,7 +47,7 @@ description: "Task list for Life OS Setup"
 ### Setup & Config Foundation (User Story 1)
 
 - [X] T005 [P] [US1] Resolve the 9 project keys from Jira via the MCP server (discover/list projects, match `.jira.project_discovery.required_domains`), creating any missing projects per `contracts/jira-config.md`; keys stored in `.jira.key_overrides` only when a domain/name diverges. **Status 2026-08-02**: MCP verified; keys already resolved (BF, AT, HM, FIN, BR, BH, BS, MDP, ART). **Done 2026-08-03 Phase 2**: re-probed live via `jira_get_all_projects` — all 9 domains resolve (Career=BF, Family=AT, House=HM, Finance=FIN, Network=BR, Health/Diet=BH, LifeOS=BS, Docs=MDP, Ideas=ART); no projects missing. Recorded in `project-config.json` + runbook `scripts/jira-setup.md` §0.
-- [X] T006 [P] [US1] Configure the workflow `Backlog → Ready → Todo-Week → In Progress → Waiting → Done` per `contracts/jira-config.md`. **Done 2026-08-03**: exact status order + transition edges (incl. friction `Todo-Week→Waiting/Ready`) + status-category mapping encoded in `scripts/jira-setup.md` §1 (admin UI action — MCP tools don't create workflows).
+- [X] T006 [P] [US1] Configure the workflow `Backlog → Ready → Todo-Week → In Progress → Blocked Or FollowUp → Done` per `contracts/jira-config.md`. **Done 2026-08-03**: exact status order + transition edges (incl. friction `Todo-Week→Blocked Or FollowUp/Ready`) + status-category mapping encoded in `scripts/jira-setup.md` §1 (admin UI action — MCP tools don't create workflows).
 - [X] T007 [US1] Define label scheme (constraint `loc/time/person`, `week:YYYY-Www`, `needs-research`/`research-done`, `routine:*`, `internal`, `long-stuck`) per `data-model.md`. **Done**: full checklist in `scripts/jira-setup.md` §2.
 - [X] T008 [US1] Add metric custom fields (`planperfection`, `deliveryperfection`, `deliverystreak`, `practicestreak:<name>`, `cleanweekstreak`, `statustier`, `maxdelivery`, `targetsweek`) per `contracts/jira-config.md`. **Done 2026-08-03**: verified via `jira_search_fields` — none present; exact field definitions (name+type) in `scripts/jira-setup.md` §3 for admin creation.
 - [X] T009 [P] [US1] Create the 5 saved filters (Pipeline, Backlog, Todo-Week, Long-stuck, Done-this-week) per `contracts/jira-config.md`. **Done**: exact JQL for each in `scripts/jira-setup.md` §4.
@@ -88,7 +88,7 @@ connectivity before Phase 3.
 - [X] T018 [P] [US2] Implement project routing logic (map capture to Career/Family/House/Finance/Network/Health-Diet/LifeOS/Docs/Ideas; fallback to Ideas) in `.opencode/skill/capture/SKILL.md`. **Done 2026-08-03**: router uses `.jira.key_overrides` (BF/AT/HM/FIN/BR/BH/BS/MDP/ART), runtime-discovery fallback, Ideas fallback on ambiguity, BPD explicitly excluded; live MCP probe confirmed all 9 targets resolve.
 - [X] T019 [US2] Implement assessment step (priority + routine-vs-once classification) in `.opencode/skill/capture/SKILL.md`
 - [X] T020 [US2] Apply labels on capture (constraint / week / internal / routine) per `data-model.md` Label Schema
-- [X] T021 [US2] Guarantee internal/antivisible items never re-hidden (only re-slot or Waiting) per FR-012 in `.opencode/skill/capture/SKILL.md`
+- [X] T021 [US2] Guarantee internal/antivisible items never re-hidden (only re-slot or Blocked Or FollowUp) per FR-012 in `.opencode/skill/capture/SKILL.md`
 
 **Checkpoint**: Capture → assessed, labeled Jira issue works end-to-end (quickstart §2).
 
@@ -139,7 +139,7 @@ long-stuck list, status tier, and 🏆 trophies resolve from Jira.
 - [X] T029 [P] [US4] Implement "what next" assessment (meetings → stakes/fear → weak stat → priority, ONE suggestion) in `.opencode/skill/daily/SKILL.md`. **Done 2026-08-03**: `what next` → one blunt suggestion + ragebait.
 - [X] T030 [P] [US4] Implement "done KEY-42" (mark Done + tick delivery via WB2 delivery tracking) in `.opencode/skill/daily/SKILL.md`. **Done 2026-08-03**: `done` → transition Done + WB2 delivery tick (T013).
 - [X] T031 [P] [US4] Implement "practice X" (increment practice streak via WB2) in `.opencode/skill/daily/SKILL.md`. **Done 2026-08-03**: `practice` → WB2 `practicestreak:<name>` (T013).
-- [X] T032 [P] [US4] Implement friction "can't do KEY-42 because Y" (re-slot / Waiting, never re-hide) in `.opencode/skill/daily/SKILL.md`. **Done 2026-08-03**: friction re-slots / Waiting, FR-012 guarantee.
+- [X] T032 [P] [US4] Implement friction "can't do KEY-42 because Y" (re-slot / Blocked Or FollowUp, never re-hide) in `.opencode/skill/daily/SKILL.md`. **Done 2026-08-03**: friction re-slots / Blocked Or FollowUp, FR-012 guarantee.
 - [X] T033 [P] [US4] Implement auxiliary commands (assess, set targets, stats, recap, stuck) — stats reads WB2 metric fields in `.opencode/skill/daily/SKILL.md`. **Done 2026-08-03**: assess/set targets/stats/recap/stuck/rage.
 - [X] T034 [P] [US4] Wire daily rage-fuel one-liner rotation (context-aware `[gym]`/`[diet]`) into today/what-next/stats surfaces using `persona/ragebait.md` (register from T016). **Done 2026-08-03**: Step 0 rotation, one line/surface/day.
 
@@ -211,7 +211,7 @@ against `persona/persona.md` and the ragebait register for consistency.
 
 - [X] T042 [P] Run quickstart.md validation end-to-end (all 6 sections) and record results. **Done 2026-08-03**: results table recorded in `research.md` §Phase 8 — Final Validation; §1 verified live via Jira MCP probe, §5/§6 runbook/persona authored, §2–§4 reviewed.
 - [X] T043 Verify no v1 out-of-scope item introduced (Telegram, cron/daemon, calendar-write, Dream/Goals, "why" doc, animated dashboard) per FR-013. **Done 2026-08-03**: grep across skills/persona/scripts — only explicit "none/absent" statements; nothing out-of-scope added.
-- [X] T044 Review internal/antivisible handling across all skills — confirm nothing ever deleted or re-hidden. **Done 2026-08-03**: all 4 skills carry FR-012 never-delete / never-re-hide guarantees; friction re-slots or holds in Waiting.
+- [X] T044 Review internal/antivisible handling across all skills — confirm nothing ever deleted or re-hidden. **Done 2026-08-03**: all 4 skills carry FR-012 never-delete / never-re-hide guarantees; friction re-slots or holds in Blocked Or FollowUp.
 - [X] T045 Consolidate persona + ragebait register, pruning one-liners that no longer land per user feedback. **Done 2026-08-03**: register healthy/consolidated; no stale lines flagged (no feedback yet); pruning mechanism documented in `persona/persona.md` + `persona/ragebait.md`.
 - [X] T046 Document setup-time confirmed values and any deferred decisions as final notes in `specs/001-life-os-setup/research.md`.**Done 2026-08-03**: §Final setup-time confirmed values + §Deferred/pending appended.
 

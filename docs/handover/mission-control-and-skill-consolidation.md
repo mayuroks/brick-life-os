@@ -72,7 +72,7 @@ Status: **DONE (2026-08-10).**
   Jira macro needs `server=System Jira` + `serverId=1c979962-873c-3fbb-ad9e-7066ed9bed18`
   (the org's app link; wrong refs → "Unable to locate Jira server").
 - Published to page `98311` "Mission Control 🔥🔥" (version 6) with 15 embedded
-  `jira` macros: Blocked/Waiting, Done-this-week, Ready-to-Pick, In-Progress,
+  `jira` macros: Blocked/FollowUp, Done-this-week, Ready-to-Pick, In-Progress,
   Todo-Week, one per domain (×9), Long-Stuck. All resolve (0 `jim-error`,
   0 "Unable to locate"); rows hydrate client-side on view.
 - Reproducible builder: `scripts/confluence-mission-control.py` (reads
@@ -88,7 +88,7 @@ Built a NEW page (does NOT touch v1 page 98311, still v6):
 **id `66161`** — "Mission Control v2 🔥🔥", child of v1. View:
 `https://mayurzenith.atlassian.net/wiki/spaces/~/66161`
 
-Layout follows `.lavish/mission-control-dashboard.html` using Confluence-native
+Layout is built directly via native Confluence
 building blocks (Confluence CANNOT render Tailwind cards/grids):
 
 - **📊 Quick Stats** — colored panels grid (note/tip/info/warning/success), one per
@@ -96,7 +96,7 @@ building blocks (Confluence CANNOT render Tailwind cards/grids):
   is `ac:name="jirachart"` (NOT `jira-chart`) with params `chartType`, `statType=statuses`,
   `jql`, `server`, `serverId` — `jira-chart` + `statField` render unknown-macro.
 - **🧁 Status Distribution** — live `jirachart` pie by status.
-- **🔴/⛔ two-column** — Ready-to-Pick | Blocked/Waiting via `ac:layout` cells + live
+- **🔴/⛔ two-column** — Ready-to-Pick | Blocked/FollowUp via `ac:layout` cells + live
   `jira` macros.
 - **📅 Weekly Delivery Snapshot** — static counts (Done-this-week, Todo-Week).
 - **🏢 By Domain** — static matrix table (9 domains × 6 statuses), counts at publish.

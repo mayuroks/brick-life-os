@@ -57,8 +57,8 @@ def build_body() -> str:
     blocks.append("<h1>Mission Control 🔥🔥</h1>")
     blocks.append("<p>Jira workflow across all Life OS domains — live via Jira macros (auto-updates).</p>")
 
-    blocks.append("<h2>📊 Blocked / Waiting</h2>")
-    blocks.append(jira(f'project in ({PROJECTS}) AND status = "Waiting" ORDER BY updated ASC'))
+    blocks.append("<h2>📊 Blocked / FollowUp</h2>")
+    blocks.append(jira(f'project in ({PROJECTS}) AND status = "Blocked Or FollowUp" ORDER BY updated ASC'))
 
     blocks.append("<h2>✅ Done · this week</h2>")
     blocks.append(jira(f'project in ({PROJECTS}) AND status = "Done" AND updated >= startOfWeek() ORDER BY updated DESC'))

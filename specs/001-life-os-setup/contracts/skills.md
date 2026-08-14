@@ -27,7 +27,7 @@ Every entry uses the form:
 - `what next` → assess + suggest ONE thing now.
 - `done KEY-42` → mark Done + tick delivery.
 - `practice X` → increment practice streak.
-- `can't do KEY-42 because Y` → friction; re-slot or hold in Waiting,
+- `can't do KEY-42 because Y` → friction; re-slot or hold in Blocked Or FollowUp,
   never re-hide.
 - `assess KEY-42` → grill/rate (urgency / value / routine-or-once).
 - `set targets ...` → record next week's targets + tiers.

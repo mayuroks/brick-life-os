@@ -12,7 +12,7 @@
 | 🏁 **Ready** | 0 | Light Gray |
 | 📝 **Todo-Week** | 0 | Blue |
 | 🔨 **In Progress** | 0 | Amber |
-| ⛔ **Waiting** | 0 | Purple |
+| ⛔ **Blocked/FollowUp** | 0 | Amber |
 | ✅ **Done (This Week)** | 0 | Green |
 |   |   |   |
 | **TOTAL** | 0 | — |
@@ -31,9 +31,9 @@ Items in **Ready** or **Todo-Week**, sorted oldest first:
 
 ## ⛔ Blocked / FollowUp
 
-Items in **Waiting** status (need attention):
+Items in **Blocked Or FollowUp** status (need attention):
 
-[JIRA QUERY](project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Waiting")
+[JIRA QUERY](project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Blocked Or FollowUp")
 
 ---
 
@@ -54,7 +54,7 @@ Items in **Waiting** status (need attention):
 
 ## 🏢 By Domain (Live Counts)
 
-| Domain | Key | Backlog | Ready | Todo | Progress | Waiting | Done |
+| Domain | Key | Backlog | Ready | Todo | Progress | Blocked | Done |
 |--------|-----|---------|-------|------|----------|---------|------|
 | Career | BF | 0 | 0 | 0 | 0 | 0 | 0 |
 | Family | FAM | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -96,7 +96,7 @@ Items in **Waiting** status (need attention):
 
 `project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "In Progress"`
 
-`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Waiting"`
+`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Blocked Or FollowUp"`
 
 `project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Done" AND updated >= startOfWeek()`
 
@@ -110,7 +110,7 @@ Items in **Waiting** status (need attention):
 | 🏁 Ready | 10186 | To Do |
 | 📝 Todo-Week | 10187 | To Do |
 | 🔨 In Progress | 10107 | In Progress |
-| ⛔ Waiting | 10184 | Blocked Or FollowUp |
+| ⛔ Blocked/FollowUp | 10184 | In Progress |
 | ✅ Done | 10108 | Done |
 
 > 🟢 All 6 statuses confirmed - matches contract

@@ -45,7 +45,7 @@
       "Ready",
       "Todo-Week",
       "In Progress",
-      "Waiting",
+      "Blocked Or FollowUp",
       "Done"
     ],
     "labels": [

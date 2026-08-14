@@ -13,7 +13,7 @@ echo "| Backlog | project in ($PROJECTS) AND status = \"Backlog\" |"
 echo "| Ready | project in ($PROJECTS) AND status = \"Ready\" |"
 echo "| Todo-Week | project in ($PROJECTS) AND status = \"Todo-Week\" |"
 echo "| In Progress | project in ($PROJECTS) AND status = \"In Progress\" |"
-echo "| Waiting | project in ($PROJECTS) AND status = \"Waiting\" |"
+echo "| Blocked/FollowUp | project in ($PROJECTS) AND status = \"Blocked Or FollowUp\" |"
 echo "| Done (All Time) | project in ($PROJECTS) AND status = \"Done\" |"
 echo ""
 echo "## Weekly Filters"
@@ -23,10 +23,10 @@ echo "| Done This Week | project in ($PROJECTS) AND status = \"Done\" AND update
 echo "| Todo-Week Items | project in ($PROJECTS) AND status = \"Todo-Week\" |"
 echo "| Ready Items | project in ($PROJECTS) AND status = \"Ready\" |"
 echo "| In Progress Items | project in ($PROJECTS) AND status = \"In Progress\" |"
-echo "| Blocked Items | project in ($PROJECTS) AND status = \"Waiting\" |"
+echo "| Blocked Items | project in ($PROJECTS) AND status = \"Blocked Or FollowUp\" |"
 echo ""
 echo "## By Domain Tables"
-echo "| Domain | Backlog | Ready | Todo | In Progress | Waiting | Done |"
+echo "| Domain | Backlog | Ready | Todo | In Progress | Blocked | Done |"
 echo "|--------|---------|-------|------|-------------|---------|------|"
 
 domains=("Career:BF" "Family:FAM" "House:HM" "Finance:FIN" "Network:BR" "Health: BH" "LifeOS:BS" "Docs:MDP" "Ideas:ART")
@@ -37,7 +37,7 @@ for domain in "${domains[@]}"; do
     ready=$(echo "project = \"$key\" AND status = \"Ready\" | wc -l | tr -d ' '")
     todo=$(echo "project = \"$key\" AND status = \"Todo-Week\" | wc -l | tr -d ' '")
     inprog=$(echo "project = \"$key\" AND status = \"In Progress\" | wc -l | tr -d ' '")
-    waiting=$(echo "project = \"$key\" AND status = \"Waiting\" | wc -l | tr -d ' '")
+    blocked=$(echo "project = \"$key\" AND status = \"Blocked Or FollowUp\" | wc -l | tr -d ' '")
     done=$(echo "project = \"$key\" AND status = \"Done\" | wc -l | tr -d ' '")
-    echo "| $name | $backlog | $ready | $todo | $inprog | $waiting | $done |"
+    echo "| $name | $backlog | $ready | $todo | $inprog | $blocked | $done |"
 done

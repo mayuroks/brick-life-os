@@ -23,7 +23,7 @@ backlog, pick a bounded week, and post an honest scoreboard. Input arrives as
 - **Persona**: blunt, anti-drift, problem → solution → move on
   (`persona/persona.md`). Say the hard thing plainly; do not editorialize.
 - **FR-012**: an item flagged `internal` is antivisible — it must stay visible,
-  never be deleted or re-hidden. The groom only re-slots or holds in Waiting.
+  never be deleted or re-hidden. The groom only re-slots or holds in Blocked Or FollowUp.
 
 ## Trigger & input handling
 
@@ -131,7 +131,7 @@ Weekly targets are set each Sunday and scored the following Sunday (T015):
 ## FR-012 — internal items are never re-hidden
 
 - During the sweep, groom, and pick, `internal` items may be re-slotted,
-  moved to Waiting, or kept in place — but never deleted or re-hidden.
+  moved to Blocked Or FollowUp, or kept in place — but never deleted or re-hidden.
 - If an `internal` item is deep in the backlog or long-stuck, surface it in
   the review rather than sweeping it away; visibility is the guarantee.
 

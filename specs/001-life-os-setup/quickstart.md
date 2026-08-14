@@ -18,7 +18,7 @@ interfaces resolve correctly, not running app unit tests.
 ```text
 1. Confirm all 9 projects exist.
 2. Confirm workflow order: Backlog → Ready → Todo-Week → In Progress →
-   Waiting → Done.
+   Blocked Or FollowUp → Done.
 3. Confirm all labels and metric custom fields exist (data-model).
 4. Create a test issue, move it through the workflow, apply labels.
 5. Open dashboard → confirm Pipeline, Long-stuck, Todo-Week, streak-slip

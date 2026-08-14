@@ -1,6 +1,6 @@
 ---
 name: daily
-description: "Daily assess-and-execute loop (User Story 4 / WB1). Triggers: 'today'/'brief', 'what next'. Assesses meetings + Todo-Week and suggests ONE thing; 'done KEY-42' marks Done + ticks delivery; 'practice X' increments the practice streak; friction 'can't do KEY-42 because Y' re-slots or holds in Waiting, never re-hides; auxiliary commands (assess, set targets, stats, recap, stuck, rage). Reads/writes WB2 metric fields and rotates the ragebait register."
+description: "Daily assess-and-execute loop (User Story 4 / WB1). Triggers: 'today'/'brief', 'what next'. Assesses meetings + Todo-Week and suggests ONE thing; 'done KEY-42' marks Done + ticks delivery; 'practice X' increments the practice streak; friction 'can't do KEY-42 because Y' re-slots or holds in Blocked Or FollowUp, never re-hides; auxiliary commands (assess, set targets, stats, recap, stuck, rage). Reads/writes WB2 metric fields and rotates the ragebait register."
 ---
 
 # /daily — today / brief / what next / done / practice / friction
@@ -23,7 +23,7 @@ executes. Friction never hides items.
   (`persona/persona.md`) + one ragebait line per surface
   (`persona/ragebait.md` from T016).
 - **FR-012**: an item flagged `internal` is antivisible — it must stay visible,
-  never be deleted or re-hidden. Friction only re-slots or holds in Waiting.
+  never be deleted or re-hidden. Friction only re-slots or holds in Blocked Or FollowUp.
 
 ## Trigger & input handling
 
@@ -98,12 +98,12 @@ Suggest **exactly one** thing to do now:
 
 1. **Never re-hide, archive, or delete** — the item stays visible (FR-012).
 2. Understand `Y` (the blocker):
-   - **Time-slot issue** → re-slot: offer alternate times or move to `Waiting`
+   - **Time-slot issue** → re-slot: offer alternate times or move to `Blocked Or FollowUp`
      with a follow-up date, keeping it visible.
-   - **Blocked on someone/something** → move to **Waiting**, record what it
+   - **Blocked on someone/something** → move to **Blocked Or FollowUp**, record what it
      waits on, set a follow-up check.
    - **Wrong priority** → re-assess and re-slot (never bury it).
-3. If the item is `internal`, keep the same guarantee — re-slot or Waiting,
+3. If the item is `internal`, keep the same guarantee — re-slot or Blocked Or FollowUp,
    never hide.
 4. Reply bluntly: the plan changed, here is where it stands, and it is still
    on the record.
@@ -128,7 +128,7 @@ Suggest **exactly one** thing to do now:
 
 ## FR-012 — internal items are never re-hidden
 
-- Friction re-slots or holds `internal` items in Waiting; it never deletes or
+- Friction re-slots or holds `internal` items in Blocked Or FollowUp; it never deletes or
   re-hides them. They stay visible on the record from capture
   (`.opencode/skill/capture/SKILL.md` applies the `internal` label) through
   the weekly groom (`.opencode/skill/weekly-groom/SKILL.md`) and here.

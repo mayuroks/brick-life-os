@@ -36,7 +36,7 @@ Create one canonical **Life OS workflow** and assign it to all 9 projects via a
 single shared workflow scheme. Status order is strict:
 
 ```
-Backlog → Ready → Todo-Week → In Progress → Waiting → Done
+Backlog → Ready → Todo-Week → In Progress → Blocked Or FollowUp → Done
 ```
 
 Transitions (exact edges; no skipping required by the contract, but the scheme
@@ -46,16 +46,16 @@ must at least expose these linear steps):
 Backlog → Ready
 Ready → Todo-Week
 Todo-Week → In Progress
-In Progress → Waiting
-Waiting → Done
+In Progress → Blocked Or FollowUp
+Blocked Or FollowUp → Done
 ```
 
 Plus the friction-respecting moves used by skills (never delete/re-hide):
-- `Todo-Week → Waiting` (friction re-slot / hold visible)
+- `Todo-Week → Blocked Or FollowUp` (friction re-slot / hold visible)
 - `Todo-Week → Ready` (re-slot back)
-- `Waiting → Done`
+- `Blocked Or FollowUp → Done`
 
-Mapping to Jira status categories: `Backlog`/`Ready`/`Todo-Week`/`Waiting`
+Mapping to Jira status categories: `Backlog`/`Ready`/`Todo-Week`/`Blocked Or FollowUp`
 = To Do; `In Progress` = In Progress; `Done` = Done.
 
 ## 2. Labels (T007)

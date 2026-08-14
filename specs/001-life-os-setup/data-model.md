@@ -37,7 +37,7 @@ dependent workstreams.
 - **Identity/Uniqueness**: unique `key` assigned by Jira; one commitment =
   one issue.
 - **Workflow / lifecycle states**:
-  `Backlog → Ready → Todo-Week → In Progress → Waiting → Done`
+  `Backlog → Ready → Todo-Week → In Progress → Blocked Or FollowUp → Done`
   - Any status may sit "long-stuck" if unchanged ≥28 days.
 
 ### Metric Record (streak / plan-deliver / tier)
@@ -79,7 +79,7 @@ dependent workstreams.
 ## Validation Rules (from spec FR-004, FR-009, FR-012)
 
 - An issue flagged `internal` MUST remain visible and never be deleted or
-  re-hidden; it may only be re-slotted or held in Waiting.
+  re-hidden; it may only be re-slotted or held in Blocked Or FollowUp.
 - `long-stuck` MUST auto-flag when `updated <= +28d` in a non-terminal
   status.
 - Status tier MUST be derive-able from `maxdelivery` + target hits.

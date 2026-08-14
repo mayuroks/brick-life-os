@@ -154,7 +154,7 @@ calendar-write automation, Dream/Goals Epics, "why" doc, or animated
 dashboard introduced. (Only mentions are explicit "none/absent" statements.)
 **FR-012 (T044)**: all four skills carry the never-delete / never-re-hide
 guarantee for `internal`/antivisible items; friction re-slots or holds in
-Waiting only.
+Blocked Or FollowUp only.
 
 ### §Final setup-time confirmed values (2026-08-03)
 
