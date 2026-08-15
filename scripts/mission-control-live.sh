@@ -6,7 +6,7 @@ JIRA_URL="https://mayurzenith.atlassian.net"
 JIRA_USER="${JIRA_USER:-mayurzenith@gmail.com}"
 JIRA_TOKEN="${JIRA_API_TOKEN:?Set JIRA_API_TOKEN in env (never hardcode secrets)}"
 
-PROJECTS="BF, FAM, HM, FIN, BR, BH, BS, MDP, ART"
+PROJECTS="BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH"
 
 # Function to count issues by JQL
 count_issues() {

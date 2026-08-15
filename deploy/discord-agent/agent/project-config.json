@@ -22,7 +22,8 @@
         "Health/Diet",
         "LifeOS",
         "Docs",
-        "Ideas"
+        "Ideas",
+        "Nush"
       ],
       "key_overrides": {
         "Career": "BF",
@@ -34,7 +35,8 @@
         "LifeOS": "BS",
         "Docs": "MDP",
         "Ideas": "ART",
-        "note": "Resolved live from Jira 2026-08-02. BPD (Personal Development) exists but is unused by the 9-domain map."
+        "Nush": "NSH",
+        "note": "Resolved live from Jira 2026-08-02. BPD (Personal Development) exists but is unused by the 10-domain map (Nush/NSH added later)."
       }
     },
     "projects": {

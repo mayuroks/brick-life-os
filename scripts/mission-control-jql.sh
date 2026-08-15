@@ -2,7 +2,7 @@
 # Mission Control JQL Generator
 # Generates JQL queries for all Life OS domains
 
-PROJECTS="BF, FAM, HM, FIN, BR, BH, BS, MDP, ART"
+PROJECTS="BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH"
 
 echo "# Mission Control Dashboard - JQL Queries"
 echo ""
@@ -29,7 +29,7 @@ echo "## By Domain Tables"
 echo "| Domain | Backlog | Ready | Todo | In Progress | Blocked | Done |"
 echo "|--------|---------|-------|------|-------------|---------|------|"
 
-domains=("Career:BF" "Family:FAM" "House:HM" "Finance:FIN" "Network:BR" "Health: BH" "LifeOS:BS" "Docs:MDP" "Ideas:ART")
+domains=("Career:BF" "Family:FAM" "House:HM" "Finance:FIN" "Network:BR" "Health: BH" "LifeOS:BS" "Docs:MDP" "Ideas:ART" "Nush:NSH")
 
 for domain in "${domains[@]}"; do
     IFS=':' read -r name key <<< "$domain"

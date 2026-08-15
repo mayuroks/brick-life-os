@@ -23,7 +23,7 @@
 
 Items in **Ready** or **Todo-Week**, sorted oldest first:
 
-[JIRA QUERY](project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status in ("Ready", "Todo-Week") ORDER BY updated ASC)
+[JIRA QUERY](project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND status in ("Ready", "Todo-Week") ORDER BY updated ASC)
 
 > 💡 **What to pick:** Start with the oldest item in Todo-Week.
 
@@ -33,7 +33,7 @@ Items in **Ready** or **Todo-Week**, sorted oldest first:
 
 Items in **Blocked Or FollowUp** status (need attention):
 
-[JIRA QUERY](project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Blocked Or FollowUp")
+[JIRA QUERY](project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND status = "Blocked Or FollowUp")
 
 ---
 
@@ -70,7 +70,7 @@ Items in **Blocked Or FollowUp** status (need attention):
 
 ## 🔥 Long-Stuck Issues (>28 days)
 
-[JIRA QUERY](project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND statusCategory != Done AND updated <= -28d)
+[JIRA QUERY](project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND statusCategory != Done AND updated <= -28d)
 
 ---
 
@@ -88,17 +88,17 @@ Items in **Blocked Or FollowUp** status (need attention):
 
 ## ⚙️ Quick Copy JQL
 
-`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Backlog"`
+`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND status = "Backlog"`
 
-`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Ready"`
+`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND status = "Ready"`
 
-`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Todo-Week"`
+`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND status = "Todo-Week"`
 
-`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "In Progress"`
+`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND status = "In Progress"`
 
-`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Blocked Or FollowUp"`
+`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND status = "Blocked Or FollowUp"`
 
-`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART) AND status = "Done" AND updated >= startOfWeek()`
+`project in (BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH) AND status = "Done" AND updated >= startOfWeek()`
 
 ---
 

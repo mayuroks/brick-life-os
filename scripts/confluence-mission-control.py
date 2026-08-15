@@ -28,14 +28,14 @@ DEPLOY_BASE = f"{SITE}/wiki"
 MAY_SERVER = "System Jira"
 MAY_SERVER_ID = "1c979962-873c-3fbb-ad9e-7066ed9bed18"
 
-PROJECTS = "BF, FAM, HM, FIN, BR, BH, BS, MDP, ART"
+PROJECTS = "BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH"
 COLUMNS = "key,summary,type,status,assignee,priority,updated"
 MAX_ISSUES = 15
 
 DOMAINS = [
     ("Career", "BF"), ("Family", "FAM"), ("House", "HM"), ("Finance", "FIN"),
     ("Network", "BR"), ("Health/Diet", "BH"), ("LifeOS", "BS"),
-    ("Docs", "MDP"), ("Ideas", "ART"),
+    ("Docs", "MDP"), ("Ideas", "ART"), ("Nush", "NSH"),
 ]
 
 

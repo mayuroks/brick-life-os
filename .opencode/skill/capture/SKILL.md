@@ -10,7 +10,7 @@ the right project. Input arrives as `add to backlog: X` (voice or text).
 
 ## Contract baseline
 
-- **SSOT = Jira.** Every capture becomes one issue in one of the 9 domain
+- **SSOT = Jira.** Every capture becomes one issue in one of the 10 domain
   projects. Nothing is stored locally.
 - **Labels / statuses / fields**: names MUST match the frozen contracts —
   `specs/001-life-os-setup/data-model.md` (Label Schema) and
@@ -42,14 +42,14 @@ the right project. Input arrives as `add to backlog: X` (voice or text).
 ## Step 1 — Router logic (project selection)
 
 Resolve the target **project key** at runtime from Jira via the MCP server —
-never hardcode static keys. The 9 canonical domains and their runtime keys
+never hardcode static keys. The 10 canonical domains and their runtime keys
 live in `project-config.json` → `.jira.project_discovery` →
 `.jira.key_overrides` (resolved live 2026-08-02:
 
 Career=`BF`, Family=`AT`, House=`HM`, Finance=`FIN`, Network=`BR`,
-Health/Diet=`BH`, LifeOS=`BS`, Docs=`MDP`, Ideas=`ART`).
+Health/Diet=`BH`, LifeOS=`BS`, Docs=`MDP`, Ideas=`ART`, Nush=`NSH`).
 
-1. Read the 9 domains from `.jira.project_discovery.required_domains`.
+1. Read the 10 domains from `.jira.project_discovery.required_domains`.
 2. Map the capture to **one** domain:
    - explicit (user says "family" / a keyword resolves cleanly), or
    - inferred from nouns / verb context (e.g. "gym", "diet", "workout" →
@@ -60,7 +60,7 @@ Health/Diet=`BH`, LifeOS=`BS`, Docs=`MDP`, Ideas=`ART`).
    present, query the MCP server `atlassian` via `jira_get_all_projects` /
    project search to derive it). **Do not route to a key that is not in the
    map** — in particular **never route to `BPD`** (Personal Development),
-   which is explicitly excluded from the 9-domain map.
+   which is explicitly excluded from the 10-domain map.
 4. **Fallback (never error)**: if the capture does not map cleanly to any of
    the 8 typed domains, route it to the **Ideas** project (`ART`) — the
    catch-all for unstructured/unrouted captures. This is the guaranteed

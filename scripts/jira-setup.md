@@ -11,7 +11,7 @@ setup and is what Phase 4/5 skills and the doctor verify against.
 
 ## 0. Projects (T005 — verified live 2026-08-02)
 
-All 9 canonical domains resolve to real projects via `jira_get_all_projects`,
+All 10 canonical domains resolve to real projects via `jira_get_all_projects`,
 matching `.jira.project_discovery.required_domains` / `.jira.key_overrides` in
 `project-config.json`. No projects need creating.
 
@@ -26,8 +26,9 @@ matching `.jira.project_discovery.required_domains` / `.jira.key_overrides` in
 | LifeOS | `BS` | B - System |
 | Docs | `MDP` | Docs |
 | Ideas (fallback) | `ART` | Any Idea/Task Dump |
+| Nush | `NSH` | Nush |
 
-`BPD` (B - Personal Development) exists but is NOT part of the 9-domain map.
+`BPD` (B - Personal Development) exists but is NOT part of the 10-domain map.
 The capture skill must never route to it.
 
 ## 1. Workflow (T006)
