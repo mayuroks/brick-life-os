@@ -22,7 +22,7 @@ const filled = tpl
   .replaceAll('${JIRA_API_TOKEN}', process.env.JIRA_API_TOKEN)
   .replaceAll(
     '${AGENT_MODEL}',
-    process.env.AGENT_MODEL || 'openrouter/deepseek/deepseek-v4-flash-0731',
+    process.env.AGENT_MODEL || 'openrouter/poolside/laguna-s-2.1:free',
   );
 
 writeFileSync(outPath, filled);

@@ -117,7 +117,7 @@ export async function runAgent(serveUrl, message, opts = {}) {
       timeoutMs,
       sessionId,
       serveUrl,
-      model: process.env.AGENT_MODEL || 'openrouter/deepseek/deepseek-v4-flash-0731',
+      model: process.env.AGENT_MODEL || 'openrouter/poolside/laguna-s-2.1:free',
     });
 
     // 3. Send message
