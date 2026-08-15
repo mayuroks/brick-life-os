@@ -34,7 +34,7 @@ DEPLOY_BASE = f"{SITE}/wiki"
 
 SERVER = "System Jira"
 SERVER_ID = "1c979962-873c-3fbb-ad9e-7066ed9bed18"
-PROJECTS = "BF, FAM, HM, FIN, BR, BH, BS, MDP, ART"
+PROJECTS = "BF, FAM, HM, FIN, BR, BH, BS, MDP, ART, NSH"
 COLUMNS = "key,summary,type,status,assignee,priority,updated"
 
 # Wait: this new page lives under the same personal space as the v1 page.
@@ -45,7 +45,7 @@ PARENT_ID = "98311"
 DOMAINS = [
     ("Career", "BF"), ("Family", "FAM"), ("House", "HM"), ("Finance", "FIN"),
     ("Network", "BR"), ("Health/Diet", "BH"), ("LifeOS", "BS"),
-    ("Docs", "MDP"), ("Next Ideas", "ART"),
+    ("Docs", "MDP"), ("Next Ideas", "ART"), ("Nush", "NSH"),
 ]
 
 # Statuses in dashboard order with panel colors (Confluence panel macro names).
@@ -135,8 +135,8 @@ def build_body(counts: dict) -> str:
 
     # --- Blocked / FollowUp (below Focus, above Delivery) ---
     blocks.append("<h3>⛔ Blocked / FollowUp</h3>"
-                  "<p>Blocked or awaiting something.</p>"
-                  + jira(f'project in ({PROJECTS}) AND status = "Blocked Or FollowUp" ORDER BY priority DESC, updated ASC', 20))
+                  "<p>Blocked, on hold, or awaiting a decision.</p>"
+                  + jira(f'project in ({PROJECTS}) AND status in ("Blocked Or FollowUp", "DECISION PENDING") ORDER BY priority DESC, updated ASC', 20))
 
     # --- Next Ideas (ART) standalone, below Blocked/FollowUp ---
     blocks.append("<h2>💡 Next Ideas (ART)</h2>")
