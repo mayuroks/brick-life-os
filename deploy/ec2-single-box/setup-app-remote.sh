@@ -7,6 +7,7 @@ set -euo pipefail
 APP_DIR="${1:-/home/ubuntu/discord-agent}"
 LOCAL_BIN="$HOME/.local/bin"
 OPENCODE_BIN="$HOME/.opencode/bin"
+SERVE_LOG="$HOME/.opencode/serve.log"
 
 export PATH="$OPENCODE_BIN:$LOCAL_BIN:/usr/local/bin:/usr/bin:/bin"
 
@@ -39,12 +40,36 @@ cd "$APP_DIR"
 npm ci --omit=dev
 node scripts/bootstrap.js
 
-echo "==> [5/6] install systemd unit"
-sudo tee /etc/systemd/system/discord-agent.service >/dev/null <<EOF
+echo "==> [5/7] install systemd units"
+# opencode serve gets its OWN unit with Restart=always so a crash is recovered
+# by systemd (it is a separate process now — not a nohup'd child of run.sh that
+# could die unnoticed and leave the bridge with a dead agent backend).
+sudo tee /etc/systemd/system/opencode-serve.service >/dev/null <<EOF
 [Unit]
-Description=Life OS agent (opencode serve + skills + Jira MCP + Discord bridge)
+Description=opencode serve (Life OS agent headless backend)
 After=network-online.target
 Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=$APP_DIR/agent
+EnvironmentFile=$APP_DIR/.env
+Environment=PATH=$OPENCODE_BIN:$LOCAL_BIN:/usr/local/bin:/usr/bin:/bin
+Environment=OPENCODE_SERVE_URL=http://127.0.0.1:4096
+ExecStart=$OPENCODE_BIN/opencode serve --port 4096 --hostname 127.0.0.1 --log-level WARN
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo tee /etc/systemd/system/discord-agent.service >/dev/null <<EOF
+[Unit]
+Description=Life OS agent (skills + Jira MCP + Discord bridge)
+After=network-online.target opencode-serve.service
+Wants=network-online.target opencode-serve.service
 
 [Service]
 Type=simple
@@ -62,13 +87,19 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 sudo systemctl daemon-reload
+sudo systemctl enable --now opencode-serve
 sudo systemctl enable --now discord-agent
 # enable --now starts a stopped service but does NOT restart an already-running
 # one, so a pushed .env (e.g. a rotated token) would otherwise not apply.
 # Restart explicitly so changed secrets take effect on every full deploy.
+sudo systemctl restart opencode-serve
 sudo systemctl restart discord-agent
 
-echo "==> [6/6] status"
+echo "==> [6/7] status"
 sleep 8
-sudo systemctl is-active discord-agent || echo "!! not active (see journal below)"
-sudo journalctl -u discord-agent --no-pager -n 25 || true
+sudo systemctl is-active opencode-serve discord-agent || echo "!! not active (see journal below)"
+sudo systemctl status opencode-serve --no-pager -l 2>/dev/null | tail -5 || true
+sudo journalctl -u discord-agent --no-pager -n 20 || true
+
+echo "==> [7/7] health"
+curl -s localhost:3000/health; echo
